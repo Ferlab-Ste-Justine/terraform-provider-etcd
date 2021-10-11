@@ -1,0 +1,7 @@
+notes.txt
+test-environment/*/certs/
+test-environment/*/terraform.tfstate
+test-environment/*/terraform.tfstate.backup
+test-environment/*/.terraform/
+test-environment/*/.terraform.lock.hcl
+terraform-provider-etcd
