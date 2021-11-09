@@ -1,13 +1,11 @@
 package provider
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-    clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 func resourceUser() *schema.Resource {
@@ -73,14 +71,14 @@ func userSchemaToModel(d *schema.ResourceData) EtcdUser {
 	return model
 }
 
-func insertUser(cli *clientv3.Client, user EtcdUser) error {
-	_, err := cli.UserAdd(context.Background(), user.Username, user.Password)
+func insertUser(conn EtcdConnection, user EtcdUser) error {
+	err := conn.AddUser(user.Username, user.Password)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error creating new user '%s': %s", user.Username, err.Error()))
 	}
 
 	for _, role := range user.Roles {
-		_, err := cli.UserGrantRole(context.Background(), user.Username, role)
+		err := conn.GrantUserRole(user.Username, role)
 		if err != nil {
 			return errors.New(fmt.Sprintf("Error adding role '%s' to user '%s': %s", role, user.Username, err.Error()))
 		}
@@ -89,34 +87,34 @@ func insertUser(cli *clientv3.Client, user EtcdUser) error {
 	return nil
 }
 
-func updateUser(cli *clientv3.Client, user EtcdUser) error {
-	userRes, userErr := cli.UserGet(context.Background(), user.Username)
-	if userErr != nil {
-		return errors.New(fmt.Sprintf("Error retrieving existing user '%s' for update: %s", user.Username, userErr.Error()))
+func updateUser(conn EtcdConnection, user EtcdUser) error {
+	resRoles, userRolesErr := conn.GetUserRoles(user.Username)
+	if userRolesErr != nil {
+		return errors.New(fmt.Sprintf("Error retrieving existing user '%s' for update: %s", user.Username, userRolesErr.Error()))
 	}
 
-	_, passErr := cli.UserChangePassword(context.Background(), user.Username, user.Password)
+	passErr := conn.ChangeUserPassword(user.Username, user.Password)
 	if passErr != nil {
 		return errors.New(fmt.Sprintf("Error updating password of user '%s': %s", user.Username, passErr.Error()))
 	}
 
 	for _, role := range user.Roles {
 		add := true
-		for _, resRole := range userRes.Roles {
+		for _, resRole := range resRoles {
 			if role == resRole {
 				add = false
 			}
 		}
 
 		if add {
-			_, err := cli.UserGrantRole(context.Background(), user.Username, role)
+			err := conn.GrantUserRole(user.Username, role)
 			if err != nil {
 				return errors.New(fmt.Sprintf("Error adding role '%s' to user '%s': %s", role, user.Username, err.Error()))
 			}
 		}
 	}
 
-	for _, resRole := range userRes.Roles {
+	for _, resRole := range resRoles {
 		remove := true
 		for _, role := range user.Roles {
 			if resRole == role {
@@ -125,7 +123,7 @@ func updateUser(cli *clientv3.Client, user EtcdUser) error {
 		}
 
 		if remove {
-			_, err := cli.UserRevokeRole(context.Background(), user.Username, resRole)
+			err := conn.RevokeUserRole(user.Username, resRole)
 			if err != nil {
 				return errors.New(fmt.Sprintf("Error removing role '%s' from user '%s': %s", resRole, user.Username, err.Error()))
 			}
@@ -135,24 +133,24 @@ func updateUser(cli *clientv3.Client, user EtcdUser) error {
 	return nil
 }
 
-func upsertUser(cli *clientv3.Client, user EtcdUser) error {
-	res, err := cli.UserList(context.Background())
+func upsertUser(conn EtcdConnection, user EtcdUser) error {
+	users, err := conn.ListUsers()
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error retrieving existing users list: %s", err.Error()))
 	}
 
-	if isStringInSlice(user.Username, res.Users) {
-		return updateUser(cli, user)
+	if isStringInSlice(user.Username, users) {
+		return updateUser(conn, user)
 	}
 	
-	return insertUser(cli, user)
+	return insertUser(conn, user)
 }
 
 func resourceUserCreate(d *schema.ResourceData, meta interface{}) error {
 	user := userSchemaToModel(d)
-	cli := meta.(*clientv3.Client)
+	conn := meta.(EtcdConnection)
 
-	err := upsertUser(cli, user)
+	err := upsertUser(conn, user)
 	if err != nil {
 		return err
 	}
@@ -163,24 +161,24 @@ func resourceUserCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceUserRead(d *schema.ResourceData, meta interface{}) error {
 	username := d.Id()
-	cli := meta.(*clientv3.Client)
+	conn := meta.(EtcdConnection)
 	
-	userRes, userErr := cli.UserGet(context.Background(), username)
-	if userErr != nil {
-		return errors.New(fmt.Sprintf("Error retrieving existing user '%s' for reading: %s", username, userErr.Error()))
+	resRoles, userRolesErr := conn.GetUserRoles(username)
+	if userRolesErr != nil {
+		return errors.New(fmt.Sprintf("Error retrieving existing user '%s' for reading: %s", username, userRolesErr.Error()))
 	}
 
 	d.Set("username", username)
-	d.Set("roles", userRes.Roles)
+	d.Set("roles", resRoles)
 
 	return nil
 }
 
 func resourceUserUpdate(d *schema.ResourceData, meta interface{}) error {
 	user := userSchemaToModel(d)
-	cli := meta.(*clientv3.Client)
+	conn := meta.(EtcdConnection)
 
-	err := upsertUser(cli, user)
+	err := upsertUser(conn, user)
 	if err != nil {
 		return err
 	}
@@ -190,9 +188,9 @@ func resourceUserUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceUserDelete(d *schema.ResourceData, meta interface{}) error {
 	user := userSchemaToModel(d)
-	cli := meta.(*clientv3.Client)
+	conn := meta.(EtcdConnection)
 	
-	_, err := cli.UserDelete(context.Background(), user.Username)
+	err := conn.DeleteUser(user.Username)
     if err != nil {
 		return errors.New(fmt.Sprintf("Error deleting user '%s': %s", user.Username, err.Error()))
 	}

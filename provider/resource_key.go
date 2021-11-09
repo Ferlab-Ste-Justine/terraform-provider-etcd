@@ -1,13 +1,11 @@
 package provider
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-    clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 func resourceKey() *schema.Resource {
@@ -55,9 +53,9 @@ func keySchemaToModel(d *schema.ResourceData) EtcdKey {
 
 func resourceKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
-	cli := meta.(*clientv3.Client)
+	conn := meta.(EtcdConnection)
 
-	_, err := cli.Put(context.Background(), key.Key, key.Value)
+	err := conn.PutKey(key.Key, key.Value)
     if err != nil {
 		return errors.New(fmt.Sprintf("Error setting value for key '%s': %s", key.Key, err.Error()))
 	}
@@ -68,24 +66,24 @@ func resourceKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceKeyRead(d *schema.ResourceData, meta interface{}) error {
 	key := d.Id()
-	cli := meta.(*clientv3.Client)
+	conn := meta.(EtcdConnection)
 
-	getRes, err := cli.Get(context.Background(), key)
+	val, err := conn.GetKey(key)
     if err != nil {
 		return errors.New(fmt.Sprintf("Error retrieving key '%s' for reading: %s", key, err.Error()))
 	}
 
 	d.Set("key", key)
-	d.Set("value", string(getRes.Kvs[0].Value))
+	d.Set("value", val)
 
 	return nil
 }
 
 func resourceKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
-	cli := meta.(*clientv3.Client)
+	conn := meta.(EtcdConnection)
 
-	_, err := cli.Put(context.Background(), key.Key, key.Value)
+	err := conn.PutKey(key.Key, key.Value)
     if err != nil {
 		return errors.New(fmt.Sprintf("Error setting value for key '%s': %s", key.Key, err.Error()))
 	}
@@ -95,9 +93,9 @@ func resourceKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
-	cli := meta.(*clientv3.Client)
+	conn := meta.(EtcdConnection)
 
-	_, err := cli.Delete(context.Background(), key.Key)
+	err := conn.DeleteKey(key.Key)
     if err != nil {
 		return errors.New(fmt.Sprintf("Error deleting key '%s': %s", key.Key, err.Error()))
 	}

@@ -14,7 +14,6 @@ We'll add further functionality as the need arises.
 This project is current in alpha status and should be used with caution.
 
 The following layers of quality assurance are currently missing:
-- Proper timeout implementation for requests
 - Retries on error
 - Automated tests
 - Documentation

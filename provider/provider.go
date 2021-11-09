@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"time"
 
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
     clientv3 "go.etcd.io/etcd/client/v3"
@@ -48,6 +49,21 @@ func Provider() *schema.Provider {
                 Required: true,
                 DefaultFunc: schema.EnvDefaultFunc("ETCDCTL_ENDPOINTS", ""),
             },
+			"connection_timeout": &schema.Schema{
+                Type: schema.TypeInt,
+                Optional: true,
+                Default: 10,
+            },
+			"request_timeout": &schema.Schema{
+                Type: schema.TypeInt,
+                Optional: true,
+                Default: 10,
+            },
+			"retries": &schema.Schema{
+                Type: schema.TypeInt,
+                Optional: true,
+                Default: 3,
+            },
         },
         ResourcesMap: map[string]*schema.Resource{
 			"etcd_role": resourceRole(),
@@ -66,6 +82,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
     caCert, _ := d.Get("ca_cert").(string)
     cert, _ := d.Get("cert").(string)
     key, _ := d.Get("key").(string)
+	connectionTimeout, _ := d.Get("connection_timeout").(int)
+	requestTimeout, _ := d.Get("request_timeout").(int)
+	retries, _ := d.Get("retries").(int)
     tlsConf := &tls.Config{}
 
     if cert != "" {
@@ -90,10 +109,21 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		(*tlsConf).RootCAs = roots
 	}
 
-    return clientv3.New(clientv3.Config{
-        Endpoints: strings.Split(endpoints, ","),
-        Username: username,
-        Password: password,
-        TLS: tlsConf,
-    })
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints: strings.Split(endpoints, ","),
+		Username: username,
+		Password: password,
+		TLS: tlsConf,
+		DialTimeout: time.Duration(connectionTimeout) * time.Second,
+	})
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Failed to connect to etcd servers: %s", err.Error()))
+	}
+
+    return EtcdConnection{
+		Client: cli,
+		Timeout: requestTimeout,
+		Retries: retries,
+	}, nil
 }
