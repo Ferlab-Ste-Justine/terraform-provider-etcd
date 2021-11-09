@@ -4,43 +4,43 @@ import (
 	"errors"
 	"fmt"
 
-    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceUser() *schema.Resource {
-    return &schema.Resource{
-        Create: resourceUserCreate,
-        Read: resourceUserRead,
-        Delete: resourceUserDelete,
-        Update: resourceUserUpdate,
-        Importer: &schema.ResourceImporter{
-            State: schema.ImportStatePassthrough,
-        },
-        Schema: map[string]*schema.Schema{
-            "username": {
-                Type: schema.TypeString,
-                Required: true,
-                ForceNew: true,
-                ValidateFunc: validation.StringIsNotEmpty,
-            },
-            "password": {
-                Type: schema.TypeString,
-                Sensitive: true,
-                Optional: true,
-                ForceNew: false,
-                ValidateFunc: validation.StringIsNotEmpty,
-            },
-            "roles": {
-                Type: schema.TypeSet,
-                Optional: true,
-                ForceNew: false,
+	return &schema.Resource{
+		Create: resourceUserCreate,
+		Read:   resourceUserRead,
+		Delete: resourceUserDelete,
+		Update: resourceUserUpdate,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema: map[string]*schema.Schema{
+			"username": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"password": {
+				Type:         schema.TypeString,
+				Sensitive:    true,
+				Optional:     true,
+				ForceNew:     false,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"roles": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				ForceNew: false,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-        },
-    }
+		},
+	}
 }
 
 type EtcdUser struct {
@@ -50,8 +50,8 @@ type EtcdUser struct {
 }
 
 func userSchemaToModel(d *schema.ResourceData) EtcdUser {
-    model := EtcdUser{Username: "", Password: "", Roles: []string{}}
-	
+	model := EtcdUser{Username: "", Password: "", Roles: []string{}}
+
 	username, _ := d.GetOk("username")
 	model.Username = username.(string)
 
@@ -142,7 +142,7 @@ func upsertUser(conn EtcdConnection, user EtcdUser) error {
 	if isStringInSlice(user.Username, users) {
 		return updateUser(conn, user)
 	}
-	
+
 	return insertUser(conn, user)
 }
 
@@ -156,13 +156,13 @@ func resourceUserCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(user.Username)
-    return resourceUserRead(d, meta)
+	return resourceUserRead(d, meta)
 }
 
 func resourceUserRead(d *schema.ResourceData, meta interface{}) error {
 	username := d.Id()
 	conn := meta.(EtcdConnection)
-	
+
 	resRoles, userRolesErr := conn.GetUserRoles(username)
 	if userRolesErr != nil {
 		return errors.New(fmt.Sprintf("Error retrieving existing user '%s' for reading: %s", username, userRolesErr.Error()))
@@ -183,17 +183,17 @@ func resourceUserUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-    return resourceUserRead(d, meta)
+	return resourceUserRead(d, meta)
 }
 
 func resourceUserDelete(d *schema.ResourceData, meta interface{}) error {
 	user := userSchemaToModel(d)
 	conn := meta.(EtcdConnection)
-	
+
 	err := conn.DeleteUser(user.Username)
-    if err != nil {
+	if err != nil {
 		return errors.New(fmt.Sprintf("Error deleting user '%s': %s", user.Username, err.Error()))
 	}
 
-    return nil
+	return nil
 }

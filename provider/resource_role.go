@@ -4,78 +4,78 @@ import (
 	"errors"
 	"fmt"
 
-    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceRole() *schema.Resource {
 	return &schema.Resource{
-        Create: resourceRoleCreate,
-        Read: resourceRoleRead,
-        Delete: resourceRoleDelete,
-        Update: resourceRoleUpdate,
-        Importer: &schema.ResourceImporter{
-            State: schema.ImportStatePassthrough,
-        },
-        Schema: map[string]*schema.Schema{
-            "name": {
-                Type: schema.TypeString,
-                Required: true,
-                ForceNew: true,
-                ValidateFunc: validation.StringIsNotEmpty,
-            },
-            "permissions": {
-                Type: schema.TypeSet,
-                Optional: true,
-                ForceNew: false,
-                Elem: &schema.Resource{
-                    Schema: map[string]*schema.Schema{
-                        "permission": {
-                            Type: schema.TypeString,
-                            Optional: true,
-                            ForceNew: false,
+		Create: resourceRoleCreate,
+		Read:   resourceRoleRead,
+		Delete: resourceRoleDelete,
+		Update: resourceRoleUpdate,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"permissions": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				ForceNew: false,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"permission": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: false,
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								v := val.(string)
 								if v != "read" && v != "write" && v != "readwrite" {
 									return []string{}, []error{errors.New("Permission value for role can only be one of the followings: read, write, readwrite")}
 								}
-			
+
 								return []string{}, []error{}
 							},
-                        },
-                        "key": {
-                            Type: schema.TypeString,
-                            Required: true,
-                            ForceNew: false,
-                            ValidateFunc: validation.StringIsNotEmpty,
-                        },
-                        "range_end": {
-                            Type: schema.TypeString,
-                            Required: true,
-                            ForceNew: false,
-                            ValidateFunc: validation.StringIsNotEmpty,
-                        },
-                    },
-                },
+						},
+						"key": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     false,
+							ValidateFunc: validation.StringIsNotEmpty,
+						},
+						"range_end": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ForceNew:     false,
+							ValidateFunc: validation.StringIsNotEmpty,
+						},
+					},
+				},
 			},
-        },
-    }
+		},
+	}
 }
 
 type EtcdRolePermission struct {
 	Permission string
-	Key string
-	RangeEnd string
+	Key        string
+	RangeEnd   string
 }
 
 type EtcdRole struct {
-	Name string
+	Name        string
 	Permissions []EtcdRolePermission
 }
 
 func roleSchemaToModel(d *schema.ResourceData) EtcdRole {
-    model := EtcdRole{Name: "", Permissions: []EtcdRolePermission{}}
-	
+	model := EtcdRole{Name: "", Permissions: []EtcdRolePermission{}}
+
 	name, _ := d.GetOk("name")
 	model.Name = name.(string)
 
@@ -155,29 +155,29 @@ func upsertRole(conn EtcdConnection, role EtcdRole) error {
 	if isStringInSlice(role.Name, roles) {
 		return updateRole(conn, role)
 	}
-	
+
 	return insertRole(conn, role)
 }
 
 func resourceRoleCreate(d *schema.ResourceData, meta interface{}) error {
 	role := roleSchemaToModel(d)
 	conn := meta.(EtcdConnection)
-	
+
 	err := upsertRole(conn, role)
 	if err != nil {
 		return err
 	}
-	
+
 	d.SetId(role.Name)
-    return resourceRoleRead(d, meta)
+	return resourceRoleRead(d, meta)
 }
 
 func resourceRoleRead(d *schema.ResourceData, meta interface{}) error {
 	roleName := d.Id()
 	conn := meta.(EtcdConnection)
-	
+
 	resPermissions, err := conn.GetRolePermissions(roleName)
-    if err != nil {
+	if err != nil {
 		return errors.New(fmt.Sprintf("Error retrieving existing role '%s' for reading: %s", roleName, err.Error()))
 	}
 
@@ -186,12 +186,12 @@ func resourceRoleRead(d *schema.ResourceData, meta interface{}) error {
 	for _, resPermission := range resPermissions {
 		permissions = append(permissions, map[string]interface{}{
 			"permission": resPermission.Permission,
-			"key": resPermission.Key,
-			"range_end": resPermission.RangeEnd,
+			"key":        resPermission.Key,
+			"range_end":  resPermission.RangeEnd,
 		})
 	}
 	d.Set("permissions", permissions)
-    
+
 	return nil
 }
 
@@ -199,15 +199,15 @@ func resourceRoleUpdate(d *schema.ResourceData, meta interface{}) error {
 	role := roleSchemaToModel(d)
 	conn := meta.(EtcdConnection)
 	upsertRole(conn, role)
-    return resourceRoleRead(d, meta)
+	return resourceRoleRead(d, meta)
 }
 
 func resourceRoleDelete(d *schema.ResourceData, meta interface{}) error {
 	role := roleSchemaToModel(d)
 	conn := meta.(EtcdConnection)
-	
+
 	err := conn.DeleteRole(role.Name)
-    if err != nil {
+	if err != nil {
 		return errors.New(fmt.Sprintf("Error deleting role '%s': %s", role.Name, err.Error()))
 	}
 
