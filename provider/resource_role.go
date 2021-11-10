@@ -10,6 +10,7 @@ import (
 
 func resourceRole() *schema.Resource {
 	return &schema.Resource{
+		Description: "User role for etcd to define access control.",
 		Create: resourceRoleCreate,
 		Read:   resourceRoleRead,
 		Delete: resourceRoleDelete,
@@ -19,18 +20,21 @@ func resourceRole() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
+				Description: "Name of the role. Changing this will delete the role and create a new one.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"permissions": {
+				Description: "Permissions to grant to the role on various etcd key ranges.",
 				Type:     schema.TypeSet,
 				Optional: true,
 				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"permission": {
+							Description: "Permissions to grant to the role on the given key range. Can be: read, write or readwrite",
 							Type:     schema.TypeString,
 							Optional: true,
 							ForceNew: false,
@@ -44,12 +48,14 @@ func resourceRole() *schema.Resource {
 							},
 						},
 						"key": {
+							Description: "Key specifying the beginning of the key range.",
 							Type:         schema.TypeString,
 							Required:     true,
 							ForceNew:     false,
 							ValidateFunc: validation.StringIsNotEmpty,
 						},
 						"range_end": {
+							Description: "Key specifying the end of the key range (exclusive). To you set it to the value of the key to grant permission on a single key. If you would like the range to be anything prefixed by the key, you can use the etcd_prefix_range_end data helper.",
 							Type:         schema.TypeString,
 							Required:     true,
 							ForceNew:     false,

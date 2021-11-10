@@ -10,6 +10,7 @@ import (
 
 func resourceKey() *schema.Resource {
 	return &schema.Resource{
+		Description: "Key value for etcd.",
 		Create: resourceKeyCreate,
 		Read:   resourceKeyRead,
 		Delete: resourceKeyDelete,
@@ -19,12 +20,14 @@ func resourceKey() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"key": {
+				Description: "Key to set.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"value": {
+				Description: "Value to store in the key.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     false,

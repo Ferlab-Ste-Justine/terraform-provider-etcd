@@ -10,6 +10,7 @@ import (
 
 func resourceUser() *schema.Resource {
 	return &schema.Resource{
+		Description: "User that can access etcd.",
 		Create: resourceUserCreate,
 		Read:   resourceUserRead,
 		Delete: resourceUserDelete,
@@ -19,12 +20,14 @@ func resourceUser() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"username": {
+				Description: "Name of the user. Changing this will delete the user and create a new one.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"password": {
+				Description: "Password of the user. Can be omitted for a user that you wish to authenticate strictly with tls certificate authentication.",
 				Type:         schema.TypeString,
 				Sensitive:    true,
 				Optional:     true,
@@ -32,6 +35,7 @@ func resourceUser() *schema.Resource {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"roles": {
+				Description: "Roles of the user, to define his access.",
 				Type:     schema.TypeSet,
 				Optional: true,
 				ForceNew: false,

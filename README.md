@@ -16,7 +16,6 @@ This project is current in alpha status and should be used with caution.
 The following layers of quality assurance are currently missing:
 - Retries on error
 - Automated tests
-- Documentation
 - Publishing the provider on the terraform registry
 - Battle-testing the provider more
 

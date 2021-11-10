@@ -13,55 +13,67 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
+func init() {
+	schema.DescriptionKind = schema.StringMarkdown
+}
+
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"username": &schema.Schema{
+				Description: "Name of the etcd user that will be used to access etcd. Can alternatively be set with the ETCDCTL_USERNAME environment variable. Can also be omitted if tls certificate authentication will be used instead as the username will be infered from the certificate.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("ETCDCTL_USERNAME", ""),
 			},
 			"password": &schema.Schema{
+				Description: "Password of the etcd user that will be used to access etcd. Can alternatively be set with the ETCDCTL_PASSWORD environment variable. Can also be omitted if tls certificate authentication will be used instead.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("ETCDCTL_PASSWORD", ""),
 			},
 			"ca_cert": &schema.Schema{
+				Description: "File that contains the CA certificate that signed the etcd servers' certificates. Can alternatively be set with the ETCDCTL_CACERT environment variable. Can also be omitted.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ETCDCTL_CACERT", ""),
 			},
 			"cert": &schema.Schema{
+				Description: "File that contains the client certificate used to authentify the user. Can alternatively be set with the ETCDCTL_CERT environment variable. Can be omitted if password authentication is used.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ETCDCTL_CERT", ""),
 			},
 			"key": &schema.Schema{
+				Description: "File that contains the client encryption key used to authentify the user. Can alternatively be set with the ETCDCTL_KEY environment variable. Can be omitted if password authentication is used.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ETCDCTL_KEY", ""),
 			},
 			"endpoints": &schema.Schema{
+				Description: "Endpoints of the etcd servers. The entry of each server should follow the ip:port format and be coma separated. Can alternatively be set with the ETCDCTL_ENDPOINTS environment variable.",
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ETCDCTL_ENDPOINTS", ""),
 			},
 			"connection_timeout": &schema.Schema{
+				Description: "Timeout to establish the etcd servers connection in seconds. Defaults to 10.",
 				Type:     schema.TypeInt,
 				Optional: true,
 				Default:  10,
 			},
 			"request_timeout": &schema.Schema{
+				Description: "Timeout for individual requests the provider makes on the etcd servers in seconds. Defaults to 10.",
 				Type:     schema.TypeInt,
 				Optional: true,
 				Default:  10,
 			},
 			"retries": &schema.Schema{
+				Description: "Number of times operations that result in retriable errors should be re-attempted. Defaults to 2.",
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default:  3,
+				Default:  2,
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
