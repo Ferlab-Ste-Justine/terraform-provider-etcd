@@ -69,6 +69,9 @@ func Provider() *schema.Provider {
 			"etcd_user": resourceUser(),
 			"etcd_key":  resourceKey(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"etcd_prefix_range_end": dataSourcePrefixRangeEnd(),
+		},
 		ConfigureFunc: providerConfigure,
 		//Should implement close once this issue is resolved: https://github.com/hashicorp/terraform-plugin-sdk/issues/63
 	}

@@ -1,3 +1,11 @@
+data "etcd_prefix_range_end" "test2" {
+    key = "/test2"
+}
+
+data "etcd_prefix_range_end" "testmore2" {
+    key = "/testmore2"
+}
+
 resource "etcd_role" "test" {
     name = "test"
 
@@ -9,8 +17,8 @@ resource "etcd_role" "test" {
 
     permissions {
         permission = "read"
-        key = "/test2"
-        range_end = "/test3"
+        key = data.etcd_prefix_range_end.test2.key
+        range_end = data.etcd_prefix_range_end.test2.range_end
     }
 }
 
@@ -25,8 +33,8 @@ resource "etcd_role" "testmore" {
 
     permissions {
         permission = "read"
-        key = "/testmore2"
-        range_end = "/testmore3"
+        key = data.etcd_prefix_range_end.testmore2.key
+        range_end = data.etcd_prefix_range_end.testmore2.range_end
     }
 }
 
