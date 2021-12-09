@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -184,6 +185,16 @@ func resourceRoleRead(d *schema.ResourceData, meta interface{}) error {
 
 	resPermissions, err := conn.GetRolePermissions(roleName)
 	if err != nil {
+		etcdErr, ok := err.(rpctypes.EtcdError)
+		if !ok {
+			return errors.New(fmt.Sprintf("Error retrieving existing role '%s' for reading: %s", roleName, err.Error()))
+		}
+		
+		if etcdErr.Error() == rpctypes.ErrorDesc(rpctypes.ErrGRPCRoleNotFound) {
+			d.SetId("")
+			return nil
+		}
+
 		return errors.New(fmt.Sprintf("Error retrieving existing role '%s' for reading: %s", roleName, err.Error()))
 	}
 

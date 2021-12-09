@@ -71,9 +71,14 @@ func resourceKeyRead(d *schema.ResourceData, meta interface{}) error {
 	key := d.Id()
 	conn := meta.(EtcdConnection)
 
-	val, err := conn.GetKey(key)
+	val, exists, err := conn.GetKey(key)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error retrieving key '%s' for reading: %s", key, err.Error()))
+	}
+
+	if !exists {
+		d.SetId("")
+		return nil
 	}
 
 	d.Set("key", key)

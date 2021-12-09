@@ -23,17 +23,21 @@ func (conn *EtcdConnection) PutKey(key string, val string) error {
 	return err
 }
 
-func (conn *EtcdConnection) GetKey(key string) (string, error) {
+func (conn *EtcdConnection) GetKey(key string) (string, bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conn.Timeout)*time.Second)
 	defer cancel()
 
 	getRes, err := conn.Client.Get(ctx, key)
 
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 
-	return string(getRes.Kvs[0].Value), nil
+	if len(getRes.Kvs) == 0 {
+		return "", false, nil
+	}
+
+	return string(getRes.Kvs[0].Value), true, nil
 }
 
 func (conn *EtcdConnection) DeleteKey(key string) error {

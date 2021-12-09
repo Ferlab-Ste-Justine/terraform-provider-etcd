@@ -3,6 +3,8 @@ package provider
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 func dataSourcePrefixRangeEnd() *schema.Resource {
@@ -29,13 +31,7 @@ func dataSourcePrefixRangeEndRead(d *schema.ResourceData, meta interface{}) erro
 	key := d.Get("key").(string)
 	
 	d.SetId(key)
-	
-	rangeEnd, err := getPrefixRangeEnd(key)
-	if err != nil {
-		return err
-	}
-
-	d.Set("range_end", rangeEnd)
+	d.Set("range_end", clientv3.GetPrefixRangeEnd(key))
 	
 	return nil
 }
