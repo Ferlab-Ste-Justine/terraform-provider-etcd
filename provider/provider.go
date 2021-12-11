@@ -70,10 +70,10 @@ func Provider() *schema.Provider {
 				Default:  10,
 			},
 			"retries": &schema.Schema{
-				Description: "Number of times operations that result in retriable errors should be re-attempted. Defaults to 2.",
+				Description: "Number of times operations that result in retriable errors should be re-attempted. Defaults to 10.",
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default:  2,
+				Default:  10,
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{

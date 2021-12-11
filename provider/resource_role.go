@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -115,7 +114,7 @@ func insertRole(conn EtcdConnection, role EtcdRole) error {
 
 func updateRole(conn EtcdConnection, role EtcdRole) error {
 
-	resPermissions, err := conn.GetRolePermissions(role.Name)
+	resPermissions, _, err := conn.GetRolePermissions(role.Name)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error retrieving existing role '%s' for update: %s", role.Name, err.Error()))
 	}
@@ -183,19 +182,14 @@ func resourceRoleRead(d *schema.ResourceData, meta interface{}) error {
 	roleName := d.Id()
 	conn := meta.(EtcdConnection)
 
-	resPermissions, err := conn.GetRolePermissions(roleName)
+	resPermissions, roleExists, err := conn.GetRolePermissions(roleName)
 	if err != nil {
-		etcdErr, ok := err.(rpctypes.EtcdError)
-		if !ok {
-			return errors.New(fmt.Sprintf("Error retrieving existing role '%s' for reading: %s", roleName, err.Error()))
-		}
-		
-		if etcdErr.Error() == rpctypes.ErrorDesc(rpctypes.ErrGRPCRoleNotFound) {
-			d.SetId("")
-			return nil
-		}
-
 		return errors.New(fmt.Sprintf("Error retrieving existing role '%s' for reading: %s", roleName, err.Error()))
+	}
+
+	if !roleExists {
+		d.SetId("")
+		return nil
 	}
 
 	d.Set("name", roleName)

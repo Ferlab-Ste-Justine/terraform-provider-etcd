@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -93,7 +92,7 @@ func insertUser(conn EtcdConnection, user EtcdUser) error {
 }
 
 func updateUser(conn EtcdConnection, user EtcdUser) error {
-	resRoles, userRolesErr := conn.GetUserRoles(user.Username)
+	resRoles, _, userRolesErr := conn.GetUserRoles(user.Username)
 	if userRolesErr != nil {
 		return errors.New(fmt.Sprintf("Error retrieving existing user '%s' for update: %s", user.Username, userRolesErr.Error()))
 	}
@@ -168,19 +167,14 @@ func resourceUserRead(d *schema.ResourceData, meta interface{}) error {
 	username := d.Id()
 	conn := meta.(EtcdConnection)
 
-	resRoles, userRolesErr := conn.GetUserRoles(username)
+	resRoles, userExists, userRolesErr := conn.GetUserRoles(username)
 	if userRolesErr != nil {
-		etcdErr, ok := userRolesErr.(rpctypes.EtcdError)
-		if !ok {
-			return errors.New(fmt.Sprintf("Error retrieving existing user '%s' for reading: %s", username, userRolesErr.Error()))
-		}
-		
-		if etcdErr.Error() == rpctypes.ErrorDesc(rpctypes.ErrGRPCUserNotFound) {
-			d.SetId("")
-			return nil
-		}
-
 		return errors.New(fmt.Sprintf("Error retrieving existing user '%s' for reading: %s", username, userRolesErr.Error()))
+	}
+
+	if !userExists {
+		d.SetId("")
+		return nil
 	}
 
 	d.Set("username", username)

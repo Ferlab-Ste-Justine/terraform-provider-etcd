@@ -11,10 +11,9 @@ We'll add further functionality as the need arises.
 
 # Status
 
-This project is current in alpha status and should be used with caution.
+This project is current in beta status.
 
 The following layers of quality assurance are currently missing:
-- Retries on error
 - Automated tests
 - Battle-testing the provider more
 
