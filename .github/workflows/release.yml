@@ -7,6 +7,7 @@ on:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    environment: publication
     steps:
       -
         name: Checkout
