@@ -9,6 +9,8 @@ Its scope is currently limited to the following resources:
 
 We'll add further functionality as the need arises.
 
+The provider can be found at: https://registry.terraform.io/providers/Ferlab-Ste-Justine/etcd/latest
+
 # Status
 
 This project is current in beta status.
