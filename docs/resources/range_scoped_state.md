@@ -36,8 +36,8 @@ resource "etcd_range_scoped_state" "patroni" {
 
 ### Optional
 
-- **clear_on_creation** (String) Whether to clear all pre-existing keys in the range when the resource is created.
-- **clear_on_deletion** (String) Whether to clear all existing keys in the range when the resource is deleted.
+- **clear_on_creation** (Boolean) Whether to clear all pre-existing keys in the range when the resource is created.
+- **clear_on_deletion** (Boolean) Whether to clear all existing keys in the range when the resource is deleted.
 - **id** (String) The ID of this resource.
 
 

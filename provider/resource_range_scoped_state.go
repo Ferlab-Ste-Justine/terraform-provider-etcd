@@ -36,14 +36,14 @@ func resourceRangeScopedState() *schema.Resource {
 			},
 			"clear_on_creation": &schema.Schema{
 				Description: "Whether to clear all pre-existing keys in the range when the resource is created.",
-				Type:     schema.TypeString,
+				Type:     schema.TypeBool,
 				Optional: true,
 				Default: true,
 				ForceNew: false,
 			},
 			"clear_on_deletion": &schema.Schema{
 				Description: "Whether to clear all existing keys in the range when the resource is deleted.",
-				Type:     schema.TypeString,
+				Type:     schema.TypeBool,
 				Optional: true,
 				Default: true,
 				ForceNew: false,
