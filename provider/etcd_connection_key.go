@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc/codes"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 )
@@ -88,4 +89,30 @@ func (conn *EtcdConnection) deleteKeyWithRetries(key string, retries int) error 
 
 func (conn *EtcdConnection) DeleteKey(key string) error {
 	return conn.deleteKeyWithRetries(key, conn.Retries)
+}
+
+func (conn *EtcdConnection) deleteKeyRangeWithRetries(key string, rangeEnd string , retries int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conn.Timeout)*time.Second)
+	defer cancel()
+
+	_, err := conn.Client.Delete(ctx, key, clientv3.WithRange(rangeEnd))
+	if err != nil {
+		etcdErr, ok := err.(rpctypes.EtcdError)
+		if !ok {
+			return err
+		}
+		
+		if etcdErr.Code() != codes.Unavailable || retries <= 0 {
+			return err
+		}
+
+		time.Sleep(100 * time.Millisecond)
+		return conn.deleteKeyRangeWithRetries(key, rangeEnd, retries - 1)
+	}
+
+	return nil
+}
+
+func (conn *EtcdConnection) DeleteKeyRange(key string, rangeEnd string) error {
+	return conn.deleteKeyRangeWithRetries(key, rangeEnd, conn.Retries)
 }
