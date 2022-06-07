@@ -6,6 +6,7 @@ Its scope is currently limited to the following resources:
 - roles
 - users
 - keys
+- range scoped states (to manage deletion of application states scoped by key ranges)
 
 We'll add further functionality as the need arises.
 
@@ -17,7 +18,6 @@ This project is current in beta status.
 
 The following layers of quality assurance are currently missing:
 - Automated tests
-- Battle-testing the provider more
 
 # Local Troubleshoot
 
