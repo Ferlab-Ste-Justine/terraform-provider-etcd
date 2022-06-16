@@ -1,7 +1,6 @@
 package provider
 
 import (
-    "encoding/json"
 	"errors"
 	"fmt"
 
@@ -59,8 +58,8 @@ type RangeScopedState struct {
 	ClearOnDeletion bool
 }
 
-func (state RangeScopedState) GetId() RangeScopedStateID {
-	return RangeScopedStateID{state.Key, state.RangeEnd}
+func (state RangeScopedState) GetId() KeyRangeId {
+	return KeyRangeId{state.Key, state.RangeEnd}
 }
 
 func rangeScopedStateSchemaToModel(d *schema.ResourceData) RangeScopedState {
@@ -72,29 +71,6 @@ func rangeScopedStateSchemaToModel(d *schema.ResourceData) RangeScopedState {
 	model.ClearOnDeletion = d.Get("clear_on_deletion").(bool)
 
 	return model
-}
-
-type RangeScopedStateID struct {
-	Key             string
-	RangeEnd        string
-}
-
-//Needed to absolutely ensure it is deterministic
-func (id RangeScopedStateID) MarshalJSON() ([]byte, error) {
-    mKey, _ := json.Marshal(id.Key)
-    mRangeEnd, _ := json.Marshal(id.RangeEnd)
-    return []byte(fmt.Sprintf("{\"Key\":%s,\"RangeEnd\":%s}", string(mKey), string(mRangeEnd))), nil
-}
-
-func (id RangeScopedStateID) Serialize() string {
-    out, _ := json.Marshal(id)
-    return string(out)
-}
-
-func DeserializeRangeScopedStateId(id string) (RangeScopedStateID, error) {
-    var rangeStateId RangeScopedStateID
-    err := json.Unmarshal([]byte(id), &rangeStateId)
-    return rangeStateId, err
 }
 
 func resourceRangeScopedStateCreate(d *schema.ResourceData, meta interface{}) error {
