@@ -1,5 +1,4 @@
 data "etcd_prefix_range_end" "patroni" {
-  provider = etcd.patroni
   key = "/patroni/"
 }
 
