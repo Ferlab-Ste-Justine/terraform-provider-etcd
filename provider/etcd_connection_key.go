@@ -116,3 +116,52 @@ func (conn *EtcdConnection) deleteKeyRangeWithRetries(key string, rangeEnd strin
 func (conn *EtcdConnection) DeleteKeyRange(key string, rangeEnd string) error {
 	return conn.deleteKeyRangeWithRetries(key, rangeEnd, conn.Retries)
 }
+
+type KeyInfo struct {
+	Key            string
+	Value          string
+	Version        int64
+	CreateRevision int64
+	ModRevision    int64
+	Lease          int64
+}
+
+func (conn *EtcdConnection) getKeyRangeWithRetries(key string, rangeEnd string, retries int) (map[string]KeyInfo, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conn.Timeout)*time.Second)
+	defer cancel()
+
+	keys := make(map[string]KeyInfo)
+
+	res, err := conn.Client.Get(ctx, key, clientv3.WithRange(rangeEnd))
+	if err != nil {
+		etcdErr, ok := err.(rpctypes.EtcdError)
+		if !ok {
+			return keys, err
+		}
+		
+		if etcdErr.Code() != codes.Unavailable || retries <= 0 {
+			return keys, err
+		}
+
+		time.Sleep(100 * time.Millisecond)
+		return conn.getKeyRangeWithRetries(key, rangeEnd, retries - 1)
+	}
+
+	for _, kv := range res.Kvs {
+		key, value, createRevision, modRevision, version, lease := string(kv.Key), string(kv.Value), kv.CreateRevision, kv.ModRevision, kv.Version, kv.Lease
+		keys[key] = KeyInfo{
+			Key: key,
+			Value: value,
+			Version: version,
+			CreateRevision: createRevision,
+			ModRevision: modRevision,
+			Lease: lease,
+		}
+	}
+
+	return keys, nil
+}
+
+func (conn *EtcdConnection) GetKeyRange(key string, rangeEnd string) (map[string]KeyInfo, error) {
+	return conn.getKeyRangeWithRetries(key, rangeEnd, conn.Retries)
+}
