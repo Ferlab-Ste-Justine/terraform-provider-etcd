@@ -7,6 +7,7 @@ Its scope is currently limited to the following resources:
 - users
 - keys
 - range scoped states (to manage deletion of application states scoped by key ranges)
+- synchronized key prefixes
 
 We'll add further functionality as the need arises.
 

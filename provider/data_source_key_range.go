@@ -3,6 +3,7 @@ package provider
 import (
 	"fmt"
 	"errors"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -80,10 +81,19 @@ func dataSourceKeyRangeRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New(fmt.Sprintf("Error retrieving key range (key='%s', range_end='%s'): %s", key, rangeEnd, err.Error()))
 	}
 	
-	dataKeyInfos := make([]interface{}, len(keyInfos))
-
+	sorted := make([]KeyInfo, len(keyInfos))
 	idx := 0
 	for _, keyInfo := range keyInfos {
+		sorted[idx] = keyInfo
+		idx++
+	}
+	sort.SliceStable(sorted, func(i, j int) bool {
+		return sorted[i].Key < sorted[j].Key
+	})
+
+	dataKeyInfos := make([]interface{}, len(keyInfos))
+
+	for idx, keyInfo := range sorted {
 		dataKeyInfo := make(map[string]interface{})
 
 		dataKeyInfo["key"] = keyInfo.Key
@@ -94,7 +104,6 @@ func dataSourceKeyRangeRead(d *schema.ResourceData, meta interface{}) error {
 		dataKeyInfo["lease"] = keyInfo.Lease
 
 		dataKeyInfos[idx] = dataKeyInfo
-		idx++
 	}
 
 	d.Set("results", dataKeyInfos)

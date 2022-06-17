@@ -81,6 +81,7 @@ func Provider() *schema.Provider {
 			"etcd_user": resourceUser(),
 			"etcd_key":  resourceKey(),
 			"etcd_range_scoped_state": resourceRangeScopedState(),
+			"etcd_synchronized_key_prefixes": resourceSynchronizedKeyPrefixes(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"etcd_prefix_range_end": dataSourcePrefixRangeEnd(),
