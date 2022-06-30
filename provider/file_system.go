@@ -54,7 +54,8 @@ func GetDirectoryContent(path string) (map[string]KeyInfo, error) {
 
 func ApplyDiffToDirectory(path string, diff KeysDiff, filesPermission int32, dirPermission int32) error {
 	for _, file := range diff.Deletions {
-		err := os.Remove(file)
+		fPath := filepath.Join(path, file)
+		err := os.Remove(fPath)
 		if err != nil {
 			return err
 		}
@@ -70,6 +71,12 @@ func ApplyDiffToDirectory(path string, diff KeysDiff, filesPermission int32, dir
 
 		f, err := os.OpenFile(fPath, os.O_RDWR|os.O_CREATE, os.FileMode(filesPermission))
 		if err != nil {
+			return err
+		}
+
+		err = f.Truncate(0)
+		if err != nil {
+			f.Close()
 			return err
 		}
 
