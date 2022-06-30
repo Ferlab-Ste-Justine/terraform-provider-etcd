@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"errors"
-	"strings"
 	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -11,54 +10,29 @@ import (
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 )
 
-type PrefixesDiff struct {
-	Upserts map[string]string
-	Deletions []string
-}
-
-func (diff PrefixesDiff) IsEmpty() bool {
+func (diff KeysDiff) IsEmpty() bool {
 	return len(diff.Upserts) == 0 && len(diff.Deletions) == 0
 }
 
-func (conn *EtcdConnection) diffPrefixesWithRetries(srcPrefix string, dstPrefix string, retries int) (PrefixesDiff, error) {
-	diffs := PrefixesDiff{
-		Upserts: make(map[string]string),
-		Deletions: []string{},
-	}
-
+func (conn *EtcdConnection) diffPrefixesWithRetries(srcPrefix string, dstPrefix string, retries int) (KeysDiff, error) {
 	srcKeys, srcErr := conn.getKeyRangeWithRetries(srcPrefix, clientv3.GetPrefixRangeEnd(srcPrefix), retries)
 	if srcErr != nil {
-		return diffs, srcErr
+		return KeysDiff{}, srcErr
 	}
 
 	dstKeys, dstErr := conn.getKeyRangeWithRetries(dstPrefix, clientv3.GetPrefixRangeEnd(dstPrefix), retries)
 	if dstErr != nil {
-		return diffs, dstErr
+		return KeysDiff{}, dstErr
 	}
 
-	for key, _ := range dstKeys {
-		suffix := strings.TrimPrefix(key, dstPrefix)
-		if _, ok := srcKeys[srcPrefix + suffix]; !ok {
-			diffs.Deletions = append(diffs.Deletions, suffix)
-		}
-	}
-
-	for key, srcVal := range srcKeys {
-		suffix := strings.TrimPrefix(key, srcPrefix)
-		dstVal, ok := dstKeys[dstPrefix + suffix]
-		if (!ok) || dstVal.Value != srcVal.Value {
-			diffs.Upserts[suffix] = srcVal.Value
-		}
-	}
-
-	return diffs, nil
+	return GetKeysDiff(srcKeys, srcPrefix, dstKeys, dstPrefix), nil
 }
 
-func (conn *EtcdConnection) DiffPrefixes(srcPrefix string, dstPrefix string) (PrefixesDiff, error) {
+func (conn *EtcdConnection) DiffPrefixes(srcPrefix string, dstPrefix string) (KeysDiff, error) {
 	return conn.diffPrefixesWithRetries(srcPrefix, dstPrefix, conn.Retries)
 }
 
-func (conn *EtcdConnection) applyDiffToPrefixWithRetries(prefix string, diff PrefixesDiff, retries int) error {
+func (conn *EtcdConnection) applyDiffToPrefixWithRetries(prefix string, diff KeysDiff, retries int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conn.Timeout)*time.Second)
 	defer cancel()
 
@@ -96,6 +70,19 @@ func (conn *EtcdConnection) applyDiffToPrefixWithRetries(prefix string, diff Pre
 	return nil
 }
 
-func (conn *EtcdConnection) ApplyDiffToPrefix(prefix string, diff PrefixesDiff) error {
+func (conn *EtcdConnection) ApplyDiffToPrefix(prefix string, diff KeysDiff) error {
 	return conn.applyDiffToPrefixWithRetries(prefix, diff, conn.Retries)
+}
+
+func (conn *EtcdConnection) DiffPrefixWithInput(prefix string, inputKeys map[string]KeyInfo, inputKeysPrefix string, inputIsSource bool) (KeysDiff, error) {
+	prefixKeys, err := conn.getKeyRangeWithRetries(prefix, clientv3.GetPrefixRangeEnd(prefix), conn.Retries)
+	if err != nil {
+		return KeysDiff{}, err
+	}
+
+	if inputIsSource {
+		return GetKeysDiff(inputKeys, inputKeysPrefix, prefixKeys, prefix), nil
+	}
+
+	return GetKeysDiff(prefixKeys, prefix, inputKeys, inputKeysPrefix), nil
 }
