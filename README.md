@@ -8,6 +8,7 @@ Its scope is currently limited to the following resources:
 - keys
 - range scoped states (to manage deletion of application states scoped by key ranges)
 - synchronized key prefixes
+- synchronized directory
 
 We'll add further functionality as the need arises.
 
