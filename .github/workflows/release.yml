@@ -23,7 +23,7 @@ jobs:
       -
         name: Import GPG key
         id: import_gpg
-        uses: hashicorp/ghaction-import-gpg@v2.1.0
+        uses: Ferlab-Ste-Justine/ghaction-import-gpg@main
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
