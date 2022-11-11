@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"os"
+
+	"github.com/Ferlab-Ste-Justine/etcd-sdk/keymodels"
 )
 
 func EnsureDirectoryExists(path string, dirPermission int32) error {
@@ -22,8 +24,8 @@ func EnsureDirectoryExists(path string, dirPermission int32) error {
 	return nil
 }
 
-func GetDirectoryContent(path string) (map[string]KeyInfo, error) {
-	keys := make(map[string]KeyInfo)
+func GetDirectoryContent(path string) (map[string]keymodels.KeyInfo, error) {
+	keys := make(map[string]keymodels.KeyInfo)
 
 	err := filepath.WalkDir(path, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -36,7 +38,7 @@ func GetDirectoryContent(path string) (map[string]KeyInfo, error) {
 				return err
 			}
 
-			keys[path] = KeyInfo{
+			keys[path] = keymodels.KeyInfo{
 				Key: path,
 				Value: string(content),
 				Version: 0,
@@ -52,7 +54,7 @@ func GetDirectoryContent(path string) (map[string]KeyInfo, error) {
 	return keys, err
 }
 
-func ApplyDiffToDirectory(path string, diff KeysDiff, filesPermission int32, dirPermission int32) error {
+func ApplyDiffToDirectory(path string, diff keymodels.KeysDiff, filesPermission int32, dirPermission int32) error {
 	for _, file := range diff.Deletions {
 		fPath := filepath.Join(path, file)
 		err := os.Remove(fPath)

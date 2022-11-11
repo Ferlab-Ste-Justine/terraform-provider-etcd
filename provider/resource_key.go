@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Ferlab-Ste-Justine/etcd-sdk/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -56,9 +57,9 @@ func keySchemaToModel(d *schema.ResourceData) EtcdKey {
 
 func resourceKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	err := conn.PutKey(key.Key, key.Value)
+	err := cli.PutKey(key.Key, key.Value)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error setting value for key '%s': %s", key.Key, err.Error()))
 	}
@@ -69,9 +70,9 @@ func resourceKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceKeyRead(d *schema.ResourceData, meta interface{}) error {
 	key := d.Id()
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	val, exists, err := conn.GetKey(key)
+	val, exists, err := cli.GetKey(key)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error retrieving key '%s' for reading: %s", key, err.Error()))
 	}
@@ -89,9 +90,9 @@ func resourceKeyRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	err := conn.PutKey(key.Key, key.Value)
+	err := cli.PutKey(key.Key, key.Value)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error setting value for key '%s': %s", key.Key, err.Error()))
 	}
@@ -101,9 +102,9 @@ func resourceKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	err := conn.DeleteKey(key.Key)
+	err := cli.DeleteKey(key.Key)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error deleting key '%s': %s", key.Key, err.Error()))
 	}

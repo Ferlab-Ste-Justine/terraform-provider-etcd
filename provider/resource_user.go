@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Ferlab-Ste-Justine/etcd-sdk/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -47,14 +48,8 @@ func resourceUser() *schema.Resource {
 	}
 }
 
-type EtcdUser struct {
-	Username string
-	Password string
-	Roles    []string
-}
-
-func userSchemaToModel(d *schema.ResourceData) EtcdUser {
-	model := EtcdUser{Username: "", Password: "", Roles: []string{}}
+func userSchemaToModel(d *schema.ResourceData) client.EtcdUser {
+	model := client.EtcdUser{Username: "", Password: "", Roles: []string{}}
 
 	username, _ := d.GetOk("username")
 	model.Username = username.(string)
@@ -75,86 +70,11 @@ func userSchemaToModel(d *schema.ResourceData) EtcdUser {
 	return model
 }
 
-func insertUser(conn EtcdConnection, user EtcdUser) error {
-	err := conn.AddUser(user.Username, user.Password)
-	if err != nil {
-		return errors.New(fmt.Sprintf("Error creating new user '%s': %s", user.Username, err.Error()))
-	}
-
-	for _, role := range user.Roles {
-		err := conn.GrantUserRole(user.Username, role)
-		if err != nil {
-			return errors.New(fmt.Sprintf("Error adding role '%s' to user '%s': %s", role, user.Username, err.Error()))
-		}
-	}
-
-	return nil
-}
-
-func updateUser(conn EtcdConnection, user EtcdUser) error {
-	resRoles, _, userRolesErr := conn.GetUserRoles(user.Username)
-	if userRolesErr != nil {
-		return errors.New(fmt.Sprintf("Error retrieving existing user '%s' for update: %s", user.Username, userRolesErr.Error()))
-	}
-
-	passErr := conn.ChangeUserPassword(user.Username, user.Password)
-	if passErr != nil {
-		return errors.New(fmt.Sprintf("Error updating password of user '%s': %s", user.Username, passErr.Error()))
-	}
-
-	for _, role := range user.Roles {
-		add := true
-		for _, resRole := range resRoles {
-			if role == resRole {
-				add = false
-			}
-		}
-
-		if add {
-			err := conn.GrantUserRole(user.Username, role)
-			if err != nil {
-				return errors.New(fmt.Sprintf("Error adding role '%s' to user '%s': %s", role, user.Username, err.Error()))
-			}
-		}
-	}
-
-	for _, resRole := range resRoles {
-		remove := true
-		for _, role := range user.Roles {
-			if resRole == role {
-				remove = false
-			}
-		}
-
-		if remove {
-			err := conn.RevokeUserRole(user.Username, resRole)
-			if err != nil {
-				return errors.New(fmt.Sprintf("Error removing role '%s' from user '%s': %s", resRole, user.Username, err.Error()))
-			}
-		}
-	}
-
-	return nil
-}
-
-func upsertUser(conn EtcdConnection, user EtcdUser) error {
-	users, err := conn.ListUsers()
-	if err != nil {
-		return errors.New(fmt.Sprintf("Error retrieving existing users list: %s", err.Error()))
-	}
-
-	if isStringInSlice(user.Username, users) {
-		return updateUser(conn, user)
-	}
-
-	return insertUser(conn, user)
-}
-
 func resourceUserCreate(d *schema.ResourceData, meta interface{}) error {
 	user := userSchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	err := upsertUser(conn, user)
+	err := cli.UpsertUser(user)
 	if err != nil {
 		return err
 	}
@@ -165,9 +85,9 @@ func resourceUserCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceUserRead(d *schema.ResourceData, meta interface{}) error {
 	username := d.Id()
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	resRoles, userExists, userRolesErr := conn.GetUserRoles(username)
+	resRoles, userExists, userRolesErr := cli.GetUserRoles(username)
 	if userRolesErr != nil {
 		return errors.New(fmt.Sprintf("Error retrieving existing user '%s' for reading: %s", username, userRolesErr.Error()))
 	}
@@ -185,9 +105,9 @@ func resourceUserRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceUserUpdate(d *schema.ResourceData, meta interface{}) error {
 	user := userSchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	err := upsertUser(conn, user)
+	err := cli.UpsertUser(user)
 	if err != nil {
 		return err
 	}
@@ -197,9 +117,9 @@ func resourceUserUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceUserDelete(d *schema.ResourceData, meta interface{}) error {
 	user := userSchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	err := conn.DeleteUser(user.Username)
+	err := cli.DeleteUser(user.Username)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error deleting user '%s': %s", user.Username, err.Error()))
 	}

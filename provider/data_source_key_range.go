@@ -5,6 +5,8 @@ import (
 	"errors"
 	"sort"
 
+	"github.com/Ferlab-Ste-Justine/etcd-sdk/client"
+	"github.com/Ferlab-Ste-Justine/etcd-sdk/keymodels"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -70,18 +72,18 @@ func dataSourceKeyRange() *schema.Resource {
 }
 
 func dataSourceKeyRangeRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 	key := d.Get("key").(string)
 	rangeEnd := d.Get("range_end").(string)
 	
 	d.SetId(KeyRangeId{key, rangeEnd}.Serialize())
 
-	keyInfos, err := conn.GetKeyRange(key, rangeEnd)
+	keyInfos, _, err := cli.GetKeyRange(key, rangeEnd)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error retrieving key range (key='%s', range_end='%s'): %s", key, rangeEnd, err.Error()))
 	}
 	
-	sorted := make([]KeyInfo, len(keyInfos))
+	sorted := make([]keymodels.KeyInfo, len(keyInfos))
 	idx := 0
 	for _, keyInfo := range keyInfos {
 		sorted[idx] = keyInfo

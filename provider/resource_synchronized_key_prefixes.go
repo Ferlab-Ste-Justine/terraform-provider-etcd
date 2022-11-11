@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Ferlab-Ste-Justine/etcd-sdk/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -97,15 +98,15 @@ func DeserializeSynchronizedKeyPrefixesId(id string) (SynchronizedKeyPrefixesId,
 
 func resourceSynchronizedKeyPrefixesCreate(d *schema.ResourceData, meta interface{}) error {
 	synchronizedKeyPrefixes := synchronizedKeyPrefixesSchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	diffs, err := conn.DiffPrefixes(synchronizedKeyPrefixes.SourcePrefix, synchronizedKeyPrefixes.DestinationPrefix)
+	diffs, err := cli.DiffBetweenPrefixes(synchronizedKeyPrefixes.SourcePrefix, synchronizedKeyPrefixes.DestinationPrefix)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error getting differential of prefix %s from prefix %s: %s", synchronizedKeyPrefixes.DestinationPrefix, synchronizedKeyPrefixes.SourcePrefix, err.Error()))
 	}
 
 	if !diffs.IsEmpty() {
-		err := conn.ApplyDiffToPrefix(synchronizedKeyPrefixes.DestinationPrefix, diffs)
+		err := cli.ApplyDiffToPrefix(synchronizedKeyPrefixes.DestinationPrefix, diffs)
 		if err != nil {
 			return errors.New(fmt.Sprintf("Error applying differential to prefix %s: %s", synchronizedKeyPrefixes.DestinationPrefix, err.Error()))
 		}
@@ -117,7 +118,7 @@ func resourceSynchronizedKeyPrefixesCreate(d *schema.ResourceData, meta interfac
 
 func resourceSynchronizedKeyPrefixesRead(d *schema.ResourceData, meta interface{}) error {
 	synchronizedKeyPrefixes := synchronizedKeyPrefixesSchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
 	if synchronizedKeyPrefixes.Recurrence == "once" {
 		return nil
@@ -128,7 +129,7 @@ func resourceSynchronizedKeyPrefixesRead(d *schema.ResourceData, meta interface{
 		return nil
 	}
 
-	diffs, err := conn.DiffPrefixes(synchronizedKeyPrefixes.SourcePrefix, synchronizedKeyPrefixes.DestinationPrefix)
+	diffs, err := cli.DiffBetweenPrefixes(synchronizedKeyPrefixes.SourcePrefix, synchronizedKeyPrefixes.DestinationPrefix)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error getting differential of prefix %s from prefix %s: %s", synchronizedKeyPrefixes.DestinationPrefix, synchronizedKeyPrefixes.SourcePrefix, err.Error()))
 	}

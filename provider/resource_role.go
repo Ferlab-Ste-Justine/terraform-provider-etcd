@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Ferlab-Ste-Justine/etcd-sdk/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -68,19 +69,8 @@ func resourceRole() *schema.Resource {
 	}
 }
 
-type EtcdRolePermission struct {
-	Permission string
-	Key        string
-	RangeEnd   string
-}
-
-type EtcdRole struct {
-	Name        string
-	Permissions []EtcdRolePermission
-}
-
-func roleSchemaToModel(d *schema.ResourceData) EtcdRole {
-	model := EtcdRole{Name: "", Permissions: []EtcdRolePermission{}}
+func roleSchemaToModel(d *schema.ResourceData) client.EtcdRole {
+	model := client.EtcdRole{Name: "", Permissions: []client.EtcdRolePermission{}}
 
 	name, _ := d.GetOk("name")
 	model.Name = name.(string)
@@ -89,87 +79,18 @@ func roleSchemaToModel(d *schema.ResourceData) EtcdRole {
 	if permissionsExist {
 		for _, val := range (permissions.(*schema.Set)).List() {
 			permission := val.(map[string]interface{})
-			model.Permissions = append(model.Permissions, EtcdRolePermission{Permission: permission["permission"].(string), Key: permission["key"].(string), RangeEnd: permission["range_end"].(string)})
+			model.Permissions = append(model.Permissions, client.EtcdRolePermission{Permission: permission["permission"].(string), Key: permission["key"].(string), RangeEnd: permission["range_end"].(string)})
 		}
 	}
 
 	return model
 }
 
-func insertRole(conn EtcdConnection, role EtcdRole) error {
-	err := conn.AddRole(role.Name)
-	if err != nil {
-		return errors.New(fmt.Sprintf("Error creating new role '%s': %s", role.Name, err.Error()))
-	}
-
-	for _, permission := range role.Permissions {
-		err := conn.GrantRolePermission(role.Name, permission.Key, permission.RangeEnd, permission.Permission)
-		if err != nil {
-			return errors.New(fmt.Sprintf("Error adding role permission (key='%s', range_end='%s', permission='%s') for role '%s': %s", permission.Key, permission.RangeEnd, permission.Permission, role.Name, err.Error()))
-		}
-	}
-
-	return nil
-}
-
-func updateRole(conn EtcdConnection, role EtcdRole) error {
-
-	resPermissions, _, err := conn.GetRolePermissions(role.Name)
-	if err != nil {
-		return errors.New(fmt.Sprintf("Error retrieving existing role '%s' for update: %s", role.Name, err.Error()))
-	}
-
-	for _, resPermission := range resPermissions {
-		remove := true
-		for _, permission := range role.Permissions {
-			if resPermission.Permission == permission.Permission && resPermission.Key == permission.Key && resPermission.RangeEnd == permission.RangeEnd {
-				remove = false
-			}
-		}
-		if remove {
-			err := conn.RevokeRolePermission(role.Name, resPermission.Key, resPermission.RangeEnd)
-			if err != nil {
-				return errors.New(fmt.Sprintf("Error removing role permission (key='%s', range_end='%s', permission='%s') for role '%s': %s", resPermission.Key, resPermission.RangeEnd, resPermission.Permission, role.Name, err.Error()))
-			}
-		}
-	}
-
-	for _, permission := range role.Permissions {
-		add := true
-		for _, resPermission := range resPermissions {
-			if resPermission.Permission == permission.Permission && resPermission.Key == permission.Key && resPermission.RangeEnd == permission.RangeEnd {
-				add = false
-			}
-		}
-		if add {
-			err := conn.GrantRolePermission(role.Name, permission.Key, permission.RangeEnd, permission.Permission)
-			if err != nil {
-				return errors.New(fmt.Sprintf("Error adding role permission (key='%s', range_end='%s', permission='%s') for role '%s': %s", permission.Key, permission.RangeEnd, permission.Permission, role.Name, err.Error()))
-			}
-		}
-	}
-
-	return nil
-}
-
-func upsertRole(conn EtcdConnection, role EtcdRole) error {
-	roles, err := conn.ListRoles()
-	if err != nil {
-		return errors.New(fmt.Sprintf("Error retrieving existing roles list: %s", err.Error()))
-	}
-
-	if isStringInSlice(role.Name, roles) {
-		return updateRole(conn, role)
-	}
-
-	return insertRole(conn, role)
-}
-
 func resourceRoleCreate(d *schema.ResourceData, meta interface{}) error {
 	role := roleSchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	err := upsertRole(conn, role)
+	err := cli.UpsertRole(role)
 	if err != nil {
 		return err
 	}
@@ -180,9 +101,9 @@ func resourceRoleCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceRoleRead(d *schema.ResourceData, meta interface{}) error {
 	roleName := d.Id()
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	resPermissions, roleExists, err := conn.GetRolePermissions(roleName)
+	resPermissions, roleExists, err := cli.GetRolePermissions(roleName)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error retrieving existing role '%s' for reading: %s", roleName, err.Error()))
 	}
@@ -208,16 +129,16 @@ func resourceRoleRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceRoleUpdate(d *schema.ResourceData, meta interface{}) error {
 	role := roleSchemaToModel(d)
-	conn := meta.(EtcdConnection)
-	upsertRole(conn, role)
+	cli := meta.(client.EtcdClient)
+	cli.UpsertRole(role)
 	return resourceRoleRead(d, meta)
 }
 
 func resourceRoleDelete(d *schema.ResourceData, meta interface{}) error {
 	role := roleSchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
-	err := conn.DeleteRole(role.Name)
+	err := cli.DeleteRole(role.Name)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error deleting role '%s': %s", role.Name, err.Error()))
 	}

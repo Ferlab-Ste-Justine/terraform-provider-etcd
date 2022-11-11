@@ -7,9 +7,24 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/Ferlab-Ste-Justine/etcd-sdk/client"
+	"github.com/Ferlab-Ste-Justine/etcd-sdk/keymodels"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
+
+func DiffPrefixWithInput(cli *client.EtcdClient, prefix string, inputKeys map[string]keymodels.KeyInfo, inputKeysPrefix string, inputIsSource bool) (keymodels.KeysDiff, error) {
+	prefixKeys, _, err := cli.GetPrefix(prefix)
+	if err != nil {
+		return keymodels.KeysDiff{}, err
+	}
+
+	if inputIsSource {
+		return keymodels.GetKeysDiff(inputKeys, inputKeysPrefix, prefixKeys, prefix), nil
+	}
+
+	return keymodels.GetKeysDiff(prefixKeys, prefix, inputKeys, inputKeysPrefix), nil
+}
 
 func resourceSynchronizedDirectory() *schema.Resource {
 	return &schema.Resource{
@@ -157,7 +172,7 @@ func DeserializeSynchronizedDirectoryId(id string) (SynchronizedDirectoryId, err
 
 func resourceSynchronizedDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	synchronizedDirectory := synchronizedDirectorySchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
 	if synchronizedDirectory.Source == "key-prefix" {
 		EnsureDirectoryExists(synchronizedDirectory.Directory, synchronizedDirectory.DirectoryPermission)
@@ -169,14 +184,14 @@ func resourceSynchronizedDirectoryCreate(d *schema.ResourceData, meta interface{
 	}
 
 	inputIsSource := synchronizedDirectory.Source == "directory"
-	diffs, err := conn.DiffPrefixWithInput(synchronizedDirectory.KeyPrefix, dirKeys, synchronizedDirectory.Directory, inputIsSource)
+	diffs, err := DiffPrefixWithInput(&cli, synchronizedDirectory.KeyPrefix, dirKeys, synchronizedDirectory.Directory, inputIsSource)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error getting differential of prefix %s and directory %s: %s", synchronizedDirectory.KeyPrefix, synchronizedDirectory.Directory, err.Error()))
 	}
 
 	if !diffs.IsEmpty() {
 		if synchronizedDirectory.Source == "directory" {
-			err := conn.ApplyDiffToPrefix(synchronizedDirectory.KeyPrefix, diffs)
+			err := cli.ApplyDiffToPrefix(synchronizedDirectory.KeyPrefix, diffs)
 			if err != nil {
 				return errors.New(fmt.Sprintf("Error synchronizing changes to key prefix %s: %s", synchronizedDirectory.KeyPrefix, err.Error()))
 			}
@@ -194,7 +209,7 @@ func resourceSynchronizedDirectoryCreate(d *schema.ResourceData, meta interface{
 
 func resourceSynchronizedDirectoryRead(d *schema.ResourceData, meta interface{}) error {
 	synchronizedDirectory := synchronizedDirectorySchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
 	if synchronizedDirectory.Source == "key-prefix" {
 		EnsureDirectoryExists(synchronizedDirectory.Directory, synchronizedDirectory.DirectoryPermission)
@@ -215,7 +230,7 @@ func resourceSynchronizedDirectoryRead(d *schema.ResourceData, meta interface{})
 	}
 
 	//input is always defined as source for the direction, but it doesn't matter, we just want to see if the diff is empty
-	diffs, err := conn.DiffPrefixWithInput(synchronizedDirectory.KeyPrefix, dirKeys, synchronizedDirectory.Directory, true)
+	diffs, err := DiffPrefixWithInput(&cli, synchronizedDirectory.KeyPrefix, dirKeys, synchronizedDirectory.Directory, true)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error getting differential of prefix %s and directory %s: %s", synchronizedDirectory.KeyPrefix, synchronizedDirectory.Directory, err.Error()))
 	}

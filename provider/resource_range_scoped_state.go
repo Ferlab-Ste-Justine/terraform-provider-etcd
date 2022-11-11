@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Ferlab-Ste-Justine/etcd-sdk/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -75,10 +76,10 @@ func rangeScopedStateSchemaToModel(d *schema.ResourceData) RangeScopedState {
 
 func resourceRangeScopedStateCreate(d *schema.ResourceData, meta interface{}) error {
 	rangeState := rangeScopedStateSchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
 	if rangeState.ClearOnCreation {
-		err := conn.DeleteKeyRange(rangeState.Key, rangeState.RangeEnd)
+		err := cli.DeleteKeyRange(rangeState.Key, rangeState.RangeEnd)
 		if err != nil {
 			return errors.New(fmt.Sprintf("Error deleting key range ['%s', '%s'): %s", rangeState.Key, rangeState.RangeEnd, err.Error()))
 		}
@@ -98,10 +99,10 @@ func resourceRangeScopedStateUpdate(d *schema.ResourceData, meta interface{}) er
 
 func resourceRangeScopedStateDelete(d *schema.ResourceData, meta interface{}) error {
 	rangeState := rangeScopedStateSchemaToModel(d)
-	conn := meta.(EtcdConnection)
+	cli := meta.(client.EtcdClient)
 
 	if rangeState.ClearOnDeletion {
-		err := conn.DeleteKeyRange(rangeState.Key, rangeState.RangeEnd)
+		err := cli.DeleteKeyRange(rangeState.Key, rangeState.RangeEnd)
 		if err != nil {
 			return errors.New(fmt.Sprintf("Error deleting key range ['%s', '%s'): %s", rangeState.Key, rangeState.RangeEnd, err.Error()))
 		}
