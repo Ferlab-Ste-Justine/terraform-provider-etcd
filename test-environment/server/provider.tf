@@ -1,4 +1,4 @@
 provider "kubernetes" {
-  config_path    = "~/.kube/config"
-  config_context = "minikube"
+  config_path    = var.kubernetes_config
+  config_context = var.kubernetes_context
 }

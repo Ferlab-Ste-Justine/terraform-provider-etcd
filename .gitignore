@@ -4,6 +4,7 @@ test-environment/*/terraform.tfstate
 test-environment/*/terraform.tfstate.backup
 test-environment/*/.terraform/
 test-environment/*/.terraform.lock.hcl
+test-environment/*/*.tfvars
 test-environment/provider/dir-sync-copy/
 terraform-provider-etcd
 provider/info.txt
