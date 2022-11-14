@@ -72,7 +72,7 @@ func userSchemaToModel(d *schema.ResourceData) client.EtcdUser {
 
 func resourceUserCreate(d *schema.ResourceData, meta interface{}) error {
 	user := userSchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	err := cli.UpsertUser(user)
 	if err != nil {
@@ -85,7 +85,7 @@ func resourceUserCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceUserRead(d *schema.ResourceData, meta interface{}) error {
 	username := d.Id()
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	resRoles, userExists, userRolesErr := cli.GetUserRoles(username)
 	if userRolesErr != nil {
@@ -105,7 +105,7 @@ func resourceUserRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceUserUpdate(d *schema.ResourceData, meta interface{}) error {
 	user := userSchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	err := cli.UpsertUser(user)
 	if err != nil {
@@ -117,7 +117,7 @@ func resourceUserUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceUserDelete(d *schema.ResourceData, meta interface{}) error {
 	user := userSchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	err := cli.DeleteUser(user.Username)
 	if err != nil {

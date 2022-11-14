@@ -88,7 +88,7 @@ func roleSchemaToModel(d *schema.ResourceData) client.EtcdRole {
 
 func resourceRoleCreate(d *schema.ResourceData, meta interface{}) error {
 	role := roleSchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	err := cli.UpsertRole(role)
 	if err != nil {
@@ -101,7 +101,7 @@ func resourceRoleCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceRoleRead(d *schema.ResourceData, meta interface{}) error {
 	roleName := d.Id()
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	resPermissions, roleExists, err := cli.GetRolePermissions(roleName)
 	if err != nil {
@@ -129,14 +129,14 @@ func resourceRoleRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceRoleUpdate(d *schema.ResourceData, meta interface{}) error {
 	role := roleSchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 	cli.UpsertRole(role)
 	return resourceRoleRead(d, meta)
 }
 
 func resourceRoleDelete(d *schema.ResourceData, meta interface{}) error {
 	role := roleSchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	err := cli.DeleteRole(role.Name)
 	if err != nil {

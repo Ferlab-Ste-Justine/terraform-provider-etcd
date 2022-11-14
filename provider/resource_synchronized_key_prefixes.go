@@ -98,7 +98,7 @@ func DeserializeSynchronizedKeyPrefixesId(id string) (SynchronizedKeyPrefixesId,
 
 func resourceSynchronizedKeyPrefixesCreate(d *schema.ResourceData, meta interface{}) error {
 	synchronizedKeyPrefixes := synchronizedKeyPrefixesSchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	diffs, err := cli.DiffBetweenPrefixes(synchronizedKeyPrefixes.SourcePrefix, synchronizedKeyPrefixes.DestinationPrefix)
 	if err != nil {
@@ -118,7 +118,7 @@ func resourceSynchronizedKeyPrefixesCreate(d *schema.ResourceData, meta interfac
 
 func resourceSynchronizedKeyPrefixesRead(d *schema.ResourceData, meta interface{}) error {
 	synchronizedKeyPrefixes := synchronizedKeyPrefixesSchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	if synchronizedKeyPrefixes.Recurrence == "once" {
 		return nil

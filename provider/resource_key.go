@@ -57,7 +57,7 @@ func keySchemaToModel(d *schema.ResourceData) EtcdKey {
 
 func resourceKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	err := cli.PutKey(key.Key, key.Value)
 	if err != nil {
@@ -70,7 +70,7 @@ func resourceKeyCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceKeyRead(d *schema.ResourceData, meta interface{}) error {
 	key := d.Id()
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	val, exists, err := cli.GetKey(key)
 	if err != nil {
@@ -90,7 +90,7 @@ func resourceKeyRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	err := cli.PutKey(key.Key, key.Value)
 	if err != nil {
@@ -102,7 +102,7 @@ func resourceKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	err := cli.DeleteKey(key.Key)
 	if err != nil {

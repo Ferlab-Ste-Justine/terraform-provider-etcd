@@ -72,7 +72,7 @@ func dataSourceKeyRange() *schema.Resource {
 }
 
 func dataSourceKeyRangeRead(d *schema.ResourceData, meta interface{}) error {
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 	key := d.Get("key").(string)
 	rangeEnd := d.Get("range_end").(string)
 	

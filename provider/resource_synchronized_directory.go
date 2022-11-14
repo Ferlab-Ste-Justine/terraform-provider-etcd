@@ -172,7 +172,7 @@ func DeserializeSynchronizedDirectoryId(id string) (SynchronizedDirectoryId, err
 
 func resourceSynchronizedDirectoryCreate(d *schema.ResourceData, meta interface{}) error {
 	synchronizedDirectory := synchronizedDirectorySchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	if synchronizedDirectory.Source == "key-prefix" {
 		EnsureDirectoryExists(synchronizedDirectory.Directory, synchronizedDirectory.DirectoryPermission)
@@ -184,7 +184,7 @@ func resourceSynchronizedDirectoryCreate(d *schema.ResourceData, meta interface{
 	}
 
 	inputIsSource := synchronizedDirectory.Source == "directory"
-	diffs, err := DiffPrefixWithInput(&cli, synchronizedDirectory.KeyPrefix, dirKeys, synchronizedDirectory.Directory, inputIsSource)
+	diffs, err := DiffPrefixWithInput(cli, synchronizedDirectory.KeyPrefix, dirKeys, synchronizedDirectory.Directory, inputIsSource)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error getting differential of prefix %s and directory %s: %s", synchronizedDirectory.KeyPrefix, synchronizedDirectory.Directory, err.Error()))
 	}
@@ -209,7 +209,7 @@ func resourceSynchronizedDirectoryCreate(d *schema.ResourceData, meta interface{
 
 func resourceSynchronizedDirectoryRead(d *schema.ResourceData, meta interface{}) error {
 	synchronizedDirectory := synchronizedDirectorySchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	if synchronizedDirectory.Source == "key-prefix" {
 		EnsureDirectoryExists(synchronizedDirectory.Directory, synchronizedDirectory.DirectoryPermission)
@@ -230,7 +230,7 @@ func resourceSynchronizedDirectoryRead(d *schema.ResourceData, meta interface{})
 	}
 
 	//input is always defined as source for the direction, but it doesn't matter, we just want to see if the diff is empty
-	diffs, err := DiffPrefixWithInput(&cli, synchronizedDirectory.KeyPrefix, dirKeys, synchronizedDirectory.Directory, true)
+	diffs, err := DiffPrefixWithInput(cli, synchronizedDirectory.KeyPrefix, dirKeys, synchronizedDirectory.Directory, true)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error getting differential of prefix %s and directory %s: %s", synchronizedDirectory.KeyPrefix, synchronizedDirectory.Directory, err.Error()))
 	}

@@ -76,7 +76,7 @@ func rangeScopedStateSchemaToModel(d *schema.ResourceData) RangeScopedState {
 
 func resourceRangeScopedStateCreate(d *schema.ResourceData, meta interface{}) error {
 	rangeState := rangeScopedStateSchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	if rangeState.ClearOnCreation {
 		err := cli.DeleteKeyRange(rangeState.Key, rangeState.RangeEnd)
@@ -99,7 +99,7 @@ func resourceRangeScopedStateUpdate(d *schema.ResourceData, meta interface{}) er
 
 func resourceRangeScopedStateDelete(d *schema.ResourceData, meta interface{}) error {
 	rangeState := rangeScopedStateSchemaToModel(d)
-	cli := meta.(client.EtcdClient)
+	cli := meta.(*client.EtcdClient)
 
 	if rangeState.ClearOnDeletion {
 		err := cli.DeleteKeyRange(rangeState.Key, rangeState.RangeEnd)
