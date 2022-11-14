@@ -65,7 +65,7 @@ resource "kubernetes_deployment" "etcd" {
         }
 
         container {
-          image = "quay.io/coreos/etcd:v3.4.15"
+          image = "quay.io/coreos/etcd:v3.5.5"
           name  = "etcd"
           command = ["/opt/scripts/entrypoint.sh"]
 
