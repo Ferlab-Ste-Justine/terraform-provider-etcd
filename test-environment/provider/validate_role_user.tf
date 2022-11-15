@@ -43,3 +43,9 @@ resource "etcd_user" "test" {
     password = "hello"
     roles = ["test", "testmore"]
 }
+
+resource "etcd_user" "test2" {
+    username = "test2"
+    password = "hello"
+    roles = []
+}
