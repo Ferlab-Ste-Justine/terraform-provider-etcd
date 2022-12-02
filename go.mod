@@ -2,7 +2,7 @@ module ferlab/terraform-provider-etcd
 
 go 1.18
 
-require github.com/Ferlab-Ste-Justine/etcd-sdk v0.2.0
+require github.com/Ferlab-Ste-Justine/etcd-sdk v0.2.1
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.8.0
