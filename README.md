@@ -41,8 +41,6 @@ terraform apply
 
 Etcd will be exposed on port **32379**
 
-Copy the **test-environment/server/certs** directory to **test-environment/provider/certs**.
-
 ## Build the Provider
 
 Go to the root directory of this project and type:

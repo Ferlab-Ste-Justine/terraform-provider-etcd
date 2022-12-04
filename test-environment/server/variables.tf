@@ -9,3 +9,15 @@ variable "kubernetes_config" {
   type = string
   default = "~/.kube/config"
 }
+
+variable "kubernetes_resources_prefix" {
+  description = "Kubernetes config file to use"
+  type = string
+  default = "terraform-provider-etcd-"
+}
+
+variable "etcd_localhost_port" {
+  description = "etcd localhost port"
+  type = number
+  default = 32379
+}
