@@ -34,4 +34,5 @@ provider "etcd" {
 - **password** (String, Sensitive) Password of the etcd user that will be used to access etcd. Can alternatively be set with the ETCDCTL_PASSWORD environment variable. Can also be omitted if tls certificate authentication will be used instead.
 - **request_timeout** (String) Timeout for individual requests the provider makes on the etcd servers as a duration. Defaults to 10s.
 - **retries** (Number) Number of times operations that result in retriable errors should be re-attempted. Defaults to 10.
+- **retry_interval** (String) Duration to wait after a failing etcd request before retrying. Defaults to 100ms.
 - **username** (String) Name of the etcd user that will be used to access etcd. Can alternatively be set with the ETCDCTL_USERNAME environment variable. Can also be omitted if tls certificate authentication will be used instead as the username will be infered from the certificate.

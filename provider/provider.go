@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -84,6 +85,21 @@ func Provider() *schema.Provider {
 					return []string{}, []error{}
 				},
 			},
+			"retry_interval": &schema.Schema{
+				Description: "Duration to wait after a failing etcd request before retrying. Defaults to 100ms.",
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "100ms",
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					v := val.(string)
+					_, err := time.ParseDuration(v)
+					if err != nil {
+						return []string{}, []error{errors.New("retry_interval must be a value golang duration string value")}
+					}
+
+					return []string{}, []error{}
+				},
+			},
 			"retries": &schema.Schema{
 				Description: "Number of times operations that result in retriable errors should be re-attempted. Defaults to 10.",
 				Type:     schema.TypeInt,
@@ -117,12 +133,14 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	key, _ := d.Get("key").(string)
 	connectionTimeout, _ := d.Get("connection_timeout").(string)
 	requestTimeout, _ := d.Get("request_timeout").(string)
+	retryInterval, _ := d.Get("retry_interval").(string)
 	retries, _ := d.Get("retries").(int)
 
 	connectionTimeoutDuration, _ := time.ParseDuration(connectionTimeout)
 	requestTimeoutDuration, _ := time.ParseDuration(requestTimeout)
+	retryIntervalDuration, _ := time.ParseDuration(retryInterval)
 
-	cli, cliErr := client.Connect(client.EtcdClientOptions{
+	cli, cliErr := client.Connect(context.Background(), client.EtcdClientOptions{
 		EtcdEndpoints:     strings.Split(endpoints, ","),
 		Username:          username,
 		Password:          password,
@@ -131,6 +149,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		CaCertPath:        caCert,
 		ConnectionTimeout: connectionTimeoutDuration,
 		RequestTimeout:    requestTimeoutDuration,
+		RetryInterval:     retryIntervalDuration,
 		Retries:           uint64(retries),
 	})
 

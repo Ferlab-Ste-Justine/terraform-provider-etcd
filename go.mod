@@ -2,11 +2,11 @@ module ferlab/terraform-provider-etcd
 
 go 1.18
 
-require github.com/Ferlab-Ste-Justine/etcd-sdk v0.2.1
+require github.com/Ferlab-Ste-Justine/etcd-sdk v0.5.0
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.8.0
-	go.etcd.io/etcd/client/v3 v3.5.6
+	go.etcd.io/etcd/client/v3 v3.5.7
 )
 
 require (
@@ -38,8 +38,8 @@ require (
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/zclconf/go-cty v1.8.4 // indirect
-	go.etcd.io/etcd/api/v3 v3.5.6 // indirect
-	go.etcd.io/etcd/client/pkg/v3 v3.5.6 // indirect
+	go.etcd.io/etcd/api/v3 v3.5.7 // indirect
+	go.etcd.io/etcd/client/pkg/v3 v3.5.7 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect

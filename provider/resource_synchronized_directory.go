@@ -8,22 +8,21 @@ import (
 	"strconv"
 
 	"github.com/Ferlab-Ste-Justine/etcd-sdk/client"
-	"github.com/Ferlab-Ste-Justine/etcd-sdk/keymodels"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func DiffPrefixWithInput(cli *client.EtcdClient, prefix string, inputKeys map[string]keymodels.KeyInfo, inputKeysPrefix string, inputIsSource bool) (keymodels.KeysDiff, error) {
+func DiffPrefixWithInput(cli *client.EtcdClient, prefix string, inputKeys map[string]client.KeyInfo, inputKeysPrefix string, inputIsSource bool) (client.KeysDiff, error) {
 	prefixKeys, _, err := cli.GetPrefix(prefix)
 	if err != nil {
-		return keymodels.KeysDiff{}, err
+		return client.KeysDiff{}, err
 	}
 
 	if inputIsSource {
-		return keymodels.GetKeysDiff(inputKeys, inputKeysPrefix, prefixKeys, prefix), nil
+		return client.GetKeysDiff(inputKeys, inputKeysPrefix, prefixKeys, prefix), nil
 	}
 
-	return keymodels.GetKeysDiff(prefixKeys, prefix, inputKeys, inputKeysPrefix), nil
+	return client.GetKeysDiff(prefixKeys, prefix, inputKeys, inputKeysPrefix), nil
 }
 
 func resourceSynchronizedDirectory() *schema.Resource {
