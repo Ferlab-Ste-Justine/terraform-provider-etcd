@@ -3,8 +3,8 @@ package provider
 import (
 	"io/fs"
 	"io/ioutil"
-	"path/filepath"
 	"os"
+	"path/filepath"
 
 	"github.com/Ferlab-Ste-Justine/etcd-sdk/client"
 )
@@ -39,12 +39,12 @@ func GetDirectoryContent(path string) (map[string]client.KeyInfo, error) {
 			}
 
 			keys[path] = client.KeyInfo{
-				Key: path,
-				Value: string(content),
-				Version: 0,
+				Key:            path,
+				Value:          string(content),
+				Version:        0,
 				CreateRevision: 0,
-				ModRevision: 0,
-				Lease: 0,
+				ModRevision:    0,
+				Lease:          0,
 			}
 		}
 

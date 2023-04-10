@@ -1,7 +1,7 @@
 package provider
 
 import (
-    "encoding/json"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -28,23 +28,23 @@ func DiffPrefixWithInput(cli *client.EtcdClient, prefix string, inputKeys map[st
 func resourceSynchronizedDirectory() *schema.Resource {
 	return &schema.Resource{
 		Description: "Synchronizes the content of an key prefix and directory. Note that etcd is has a default max object size of 1.5MiB and is most suitable for keys that are bounded to a small size like configurations. Use another solution for larger files. Also, currently, only file systems following the unix convention are supported.",
-		Create: resourceSynchronizedDirectoryCreate,
-		Read:   resourceSynchronizedDirectoryRead,
-		Delete: resourceSynchronizedDirectoryDelete,
-		Update: resourceSynchronizedDirectoryUpdate,
+		Create:      resourceSynchronizedDirectoryCreate,
+		Read:        resourceSynchronizedDirectoryRead,
+		Delete:      resourceSynchronizedDirectoryDelete,
+		Update:      resourceSynchronizedDirectoryUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
 			"key_prefix": {
-				Description: "Key prefix to synchronize with the directory.",
+				Description:  "Key prefix to synchronize with the directory.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"directory": {
-				Description: "Directory to synchronize with the key prefix.",
+				Description:  "Directory to synchronize with the key prefix.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
@@ -52,10 +52,10 @@ func resourceSynchronizedDirectory() *schema.Resource {
 			},
 			"source": {
 				Description: "Authoritative source of data during the sync (data will move from the source to the destination). Can be one of: directory, key-prefix",
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc:  func(val interface{}, key string) (warns []string, errs []error) {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					source := val.(string)
 					if source != "directory" && source != "key-prefix" {
 						return []string{}, []error{errors.New("The source field must be one of the following: directory, key-prefix")}
@@ -65,10 +65,10 @@ func resourceSynchronizedDirectory() *schema.Resource {
 			},
 			"recurrence": &schema.Schema{
 				Description: "Defines when the resource should be recreated to trigger a resync. Can be set to once, onchange or always. Note that onchange looks for change during the plan phase only so consider setting it to always if another terraform resource in your script changes the source.",
-				Type:     schema.TypeString,
-				Optional: true,
-				Default: "always",
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "always",
+				ForceNew:    false,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					recurrence := val.(string)
 					if recurrence != "once" && recurrence != "onchange" && recurrence != "always" {
@@ -79,10 +79,10 @@ func resourceSynchronizedDirectory() *schema.Resource {
 			},
 			"files_permission": &schema.Schema{
 				Description: "Permission of generated files in the case where the directory is the destination.",
-				Type:     schema.TypeString,
-				Optional: true,
-				Default: "0700",
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "0700",
+				ForceNew:    false,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					permission := val.(string)
 					iPermission, err := strconv.ParseInt(permission, 8, 32)
@@ -94,10 +94,10 @@ func resourceSynchronizedDirectory() *schema.Resource {
 			},
 			"directory_permission": &schema.Schema{
 				Description: "Permission of generated directories if the directory is the destination and missing.",
-				Type:     schema.TypeString,
-				Optional: true,
-				Default: "0700",
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "0700",
+				ForceNew:    false,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					permission := val.(string)
 					iPermission, err := strconv.ParseInt(permission, 8, 32)
@@ -153,20 +153,20 @@ func (state SynchronizedDirectory) GetId() SynchronizedDirectoryId {
 
 //Needed to absolutely ensure it is deterministic
 func (id SynchronizedDirectoryId) MarshalJSON() ([]byte, error) {
-    mKeyPrefix, _ := json.Marshal(id.KeyPrefix)
-    mDirectory, _ := json.Marshal(id.Directory)
-    return []byte(fmt.Sprintf("{\"KeyPrefix\":%s,\"Directory\":%s}", string(mKeyPrefix), string(mDirectory))), nil
+	mKeyPrefix, _ := json.Marshal(id.KeyPrefix)
+	mDirectory, _ := json.Marshal(id.Directory)
+	return []byte(fmt.Sprintf("{\"KeyPrefix\":%s,\"Directory\":%s}", string(mKeyPrefix), string(mDirectory))), nil
 }
 
 func (id SynchronizedDirectoryId) Serialize() string {
-    out, _ := json.Marshal(id)
-    return string(out)
+	out, _ := json.Marshal(id)
+	return string(out)
 }
 
 func DeserializeSynchronizedDirectoryId(id string) (SynchronizedDirectoryId, error) {
-    var synchronizedDirectoryId SynchronizedDirectoryId
-    err := json.Unmarshal([]byte(id), &synchronizedDirectoryId)
-    return synchronizedDirectoryId, err
+	var synchronizedDirectoryId SynchronizedDirectoryId
+	err := json.Unmarshal([]byte(id), &synchronizedDirectoryId)
+	return synchronizedDirectoryId, err
 }
 
 func resourceSynchronizedDirectoryCreate(d *schema.ResourceData, meta interface{}) error {

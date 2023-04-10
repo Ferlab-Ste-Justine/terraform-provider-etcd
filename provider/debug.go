@@ -14,7 +14,7 @@ func DebugOutput(serializable interface{}, path string) {
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "  ")
 	_ = enc.Encode(serializable)
-	
+
 	output = buf.Bytes()
 	ioutil.WriteFile(path, output, 0644)
 }

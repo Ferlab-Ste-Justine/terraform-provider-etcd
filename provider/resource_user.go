@@ -12,23 +12,23 @@ import (
 func resourceUser() *schema.Resource {
 	return &schema.Resource{
 		Description: "User that can access etcd.",
-		Create: resourceUserCreate,
-		Read:   resourceUserRead,
-		Delete: resourceUserDelete,
-		Update: resourceUserUpdate,
+		Create:      resourceUserCreate,
+		Read:        resourceUserRead,
+		Delete:      resourceUserDelete,
+		Update:      resourceUserUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Description: "Name of the user. Changing this will delete the user and create a new one.",
+				Description:  "Name of the user. Changing this will delete the user and create a new one.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"password": {
-				Description: "Password of the user. Can be omitted for a user that you wish to authenticate strictly with tls certificate authentication.",
+				Description:  "Password of the user. Can be omitted for a user that you wish to authenticate strictly with tls certificate authentication.",
 				Type:         schema.TypeString,
 				Sensitive:    true,
 				Optional:     true,
@@ -37,9 +37,9 @@ func resourceUser() *schema.Resource {
 			},
 			"roles": {
 				Description: "Roles of the user, to define his access.",
-				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: false,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				ForceNew:    false,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

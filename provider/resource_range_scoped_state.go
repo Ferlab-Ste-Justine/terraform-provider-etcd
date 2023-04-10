@@ -12,23 +12,23 @@ import (
 func resourceRangeScopedState() *schema.Resource {
 	return &schema.Resource{
 		Description: "Resource to manage the lifecycle of a state scoped by a key range.",
-		Create: resourceRangeScopedStateCreate,
-		Read:   resourceRangeScopedStateRead,
-		Delete: resourceRangeScopedStateDelete,
-		Update: resourceRangeScopedStateUpdate,
+		Create:      resourceRangeScopedStateCreate,
+		Read:        resourceRangeScopedStateRead,
+		Delete:      resourceRangeScopedStateDelete,
+		Update:      resourceRangeScopedStateUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
 			"key": {
-				Description: "Key specifying the beginning of the key range.",
+				Description:  "Key specifying the beginning of the key range.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"range_end": {
-				Description: "Key specifying the end of the key range (exclusive). To you set it to the value of the key scopes the range to a single key. If you would like the range to be anything prefixed by the key, you can use the etcd_prefix_range_end data helper.",
+				Description:  "Key specifying the end of the key range (exclusive). To you set it to the value of the key scopes the range to a single key. If you would like the range to be anything prefixed by the key, you can use the etcd_prefix_range_end data helper.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
@@ -36,17 +36,17 @@ func resourceRangeScopedState() *schema.Resource {
 			},
 			"clear_on_creation": &schema.Schema{
 				Description: "Whether to clear all pre-existing keys in the range when the resource is created.",
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default: true,
-				ForceNew: false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    false,
 			},
 			"clear_on_deletion": &schema.Schema{
 				Description: "Whether to clear all existing keys in the range when the resource is deleted.",
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default: true,
-				ForceNew: false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    false,
 			},
 		},
 	}
@@ -110,4 +110,3 @@ func resourceRangeScopedStateDelete(d *schema.ResourceData, meta interface{}) er
 
 	return nil
 }
-

@@ -1,7 +1,7 @@
 package provider
 
 import (
-    "encoding/json"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -13,23 +13,23 @@ import (
 func resourceSynchronizedKeyPrefixes() *schema.Resource {
 	return &schema.Resource{
 		Description: "Synchronizes a source key prefix with a destination key prefix either once when the resources is created or whenever the resource is applied. Note that the resource assumes that the destination is not being written to during synchronization.",
-		Create: resourceSynchronizedKeyPrefixesCreate,
-		Read:   resourceSynchronizedKeyPrefixesRead,
-		Delete: resourceSynchronizedKeyPrefixesDelete,
-		Update: resourceSynchronizedKeyPrefixesUpdate,
+		Create:      resourceSynchronizedKeyPrefixesCreate,
+		Read:        resourceSynchronizedKeyPrefixesRead,
+		Delete:      resourceSynchronizedKeyPrefixesDelete,
+		Update:      resourceSynchronizedKeyPrefixesUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
 			"source_prefix": {
-				Description: "Source key prefix to synchronize from.",
+				Description:  "Source key prefix to synchronize from.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"destination_prefix": {
-				Description: "Destination key prefix to synchronize to.",
+				Description:  "Destination key prefix to synchronize to.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
@@ -37,10 +37,10 @@ func resourceSynchronizedKeyPrefixes() *schema.Resource {
 			},
 			"recurrence": &schema.Schema{
 				Description: "Defines when the resource should be recreated to trigger a resync. Can be set to once, onchange or always. Note that onchange looks for change during the plan phase only so consider setting it to always if another terraform resource in your script changes the source.",
-				Type:     schema.TypeString,
-				Optional: true,
-				Default: "always",
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "always",
+				ForceNew:    false,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					recurrence := val.(string)
 					if recurrence != "once" && recurrence != "onchange" && recurrence != "always" {
@@ -54,16 +54,16 @@ func resourceSynchronizedKeyPrefixes() *schema.Resource {
 }
 
 type SynchronizedKeyPrefixes struct {
-	SourcePrefix           string
-	DestinationPrefix      string
-	Recurrence             string
+	SourcePrefix      string
+	DestinationPrefix string
+	Recurrence        string
 }
 
 func synchronizedKeyPrefixesSchemaToModel(d *schema.ResourceData) SynchronizedKeyPrefixes {
 	model := SynchronizedKeyPrefixes{}
 
 	model.SourcePrefix = d.Get("source_prefix").(string)
-	model.DestinationPrefix  = d.Get("destination_prefix").(string)
+	model.DestinationPrefix = d.Get("destination_prefix").(string)
 	model.Recurrence = d.Get("recurrence").(string)
 
 	return model
@@ -80,20 +80,20 @@ func (state SynchronizedKeyPrefixes) GetId() SynchronizedKeyPrefixesId {
 
 //Needed to absolutely ensure it is deterministic
 func (id SynchronizedKeyPrefixesId) MarshalJSON() ([]byte, error) {
-    mSourcePrefix, _ := json.Marshal(id.SourcePrefix)
-    mDesginationPrefix, _ := json.Marshal(id.DestinationPrefix)
-    return []byte(fmt.Sprintf("{\"SourcePrefix\":%s,\"DestinationPrefix\":%s}", string(mSourcePrefix), string(mDesginationPrefix))), nil
+	mSourcePrefix, _ := json.Marshal(id.SourcePrefix)
+	mDesginationPrefix, _ := json.Marshal(id.DestinationPrefix)
+	return []byte(fmt.Sprintf("{\"SourcePrefix\":%s,\"DestinationPrefix\":%s}", string(mSourcePrefix), string(mDesginationPrefix))), nil
 }
 
 func (id SynchronizedKeyPrefixesId) Serialize() string {
-    out, _ := json.Marshal(id)
-    return string(out)
+	out, _ := json.Marshal(id)
+	return string(out)
 }
 
 func DeserializeSynchronizedKeyPrefixesId(id string) (SynchronizedKeyPrefixesId, error) {
-    var synchronizedKeyPrefixesId SynchronizedKeyPrefixesId
-    err := json.Unmarshal([]byte(id), &synchronizedKeyPrefixesId)
-    return synchronizedKeyPrefixesId, err
+	var synchronizedKeyPrefixesId SynchronizedKeyPrefixesId
+	err := json.Unmarshal([]byte(id), &synchronizedKeyPrefixesId)
+	return synchronizedKeyPrefixesId, err
 }
 
 func resourceSynchronizedKeyPrefixesCreate(d *schema.ResourceData, meta interface{}) error {
