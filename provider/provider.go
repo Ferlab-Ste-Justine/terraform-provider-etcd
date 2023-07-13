@@ -107,7 +107,7 @@ func Provider() *schema.Provider {
 				Default:     10,
 			},
 			"skip_tls": &schema.Schema{
-				Description: "Number of times operations that result in retriable errors should be re-attempted. Defaults to 10.",
+				Description: "If set to true, connection to the etcd cluster will be attempted in plaintext without encryption. Default to false",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
