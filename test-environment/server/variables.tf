@@ -1,7 +1,7 @@
 variable "kubernetes_context" {
   description = "Kubernetes context to use in the config file"
   type = string
-  default = "minikube"
+  default = "microk8s"
 }
 
 variable "kubernetes_config" {
@@ -17,7 +17,13 @@ variable "kubernetes_resources_prefix" {
 }
 
 variable "etcd_localhost_port" {
-  description = "etcd localhost port"
+  description = "Etcd localhost port"
   type = number
   default = 32379
+}
+
+variable "skip_tls" {
+  description = "Skip tls or not"
+  type = bool
+  default = false
 }
