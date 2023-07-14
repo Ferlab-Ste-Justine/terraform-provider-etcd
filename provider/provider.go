@@ -106,7 +106,14 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Default:     10,
 			},
+			"skip_tls": &schema.Schema{
+				Description: "If set to true, connection to the etcd cluster will be attempted in plaintext without encryption. Default to false",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
+
 		ResourcesMap: map[string]*schema.Resource{
 			"etcd_auth":                      resourceAuth(),
 			"etcd_role":                      resourceRole(),
@@ -136,6 +143,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	requestTimeout, _ := d.Get("request_timeout").(string)
 	retryInterval, _ := d.Get("retry_interval").(string)
 	retries, _ := d.Get("retries").(int)
+	skipTls, _ := d.Get("skip_tls").(bool)
 
 	connectionTimeoutDuration, _ := time.ParseDuration(connectionTimeout)
 	requestTimeoutDuration, _ := time.ParseDuration(requestTimeout)
@@ -152,6 +160,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		RequestTimeout:    requestTimeoutDuration,
 		RetryInterval:     retryIntervalDuration,
 		Retries:           uint64(retries),
+		SkipTLS:           skipTls,
 	})
 
 	if cliErr != nil {
