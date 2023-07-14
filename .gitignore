@@ -8,3 +8,4 @@ test-environment/*/*.tfvars
 test-environment/provider/dir-sync-copy/
 terraform-provider-etcd
 provider/info.txt
+dist/
