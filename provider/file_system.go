@@ -54,7 +54,39 @@ func GetDirectoryContent(path string) (map[string]client.KeyInfo, error) {
 	return keys, err
 }
 
-func ApplyDiffToDirectory(path string, diff client.KeysDiff, filesPermission int32, dirPermission int32) error {
+func applyFileToDirectory(path string, file string, content string, filesPermission int32, dirPermission int32) error {
+	fPath := filepath.Join(path, file)
+	fdir := filepath.Dir(fPath)
+	mkdirErr := os.MkdirAll(fdir, os.FileMode(dirPermission))
+	if mkdirErr != nil {
+		return mkdirErr
+	}
+
+	f, err := os.OpenFile(fPath, os.O_RDWR|os.O_CREATE, os.FileMode(filesPermission))
+	if err != nil {
+		return err
+	}
+
+	err = f.Truncate(0)
+	if err != nil {
+		f.Close()
+		return err
+	}
+
+	_, err = f.Write([]byte(content))
+	if err != nil {
+		f.Close()
+		return err
+	}
+
+	if err := f.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ApplyDiffToDirectory(path string, diff client.KeyDiff, filesPermission int32, dirPermission int32) error {
 	for _, file := range diff.Deletions {
 		fPath := filepath.Join(path, file)
 		err := os.Remove(fPath)
@@ -63,33 +95,17 @@ func ApplyDiffToDirectory(path string, diff client.KeysDiff, filesPermission int
 		}
 	}
 
-	for file, content := range diff.Upserts {
-		fPath := filepath.Join(path, file)
-		fdir := filepath.Dir(fPath)
-		mkdirErr := os.MkdirAll(fdir, os.FileMode(dirPermission))
-		if mkdirErr != nil {
-			return mkdirErr
+	for file, content := range diff.Inserts {
+		applyErr := applyFileToDirectory(path, file, content, filesPermission, dirPermission)
+		if applyErr != nil {
+			return applyErr
 		}
+	}
 
-		f, err := os.OpenFile(fPath, os.O_RDWR|os.O_CREATE, os.FileMode(filesPermission))
-		if err != nil {
-			return err
-		}
-
-		err = f.Truncate(0)
-		if err != nil {
-			f.Close()
-			return err
-		}
-
-		_, err = f.Write([]byte(content))
-		if err != nil {
-			f.Close()
-			return err
-		}
-
-		if err := f.Close(); err != nil {
-			return err
+	for file, content := range diff.Updates {
+		applyErr := applyFileToDirectory(path, file, content, filesPermission, dirPermission)
+		if applyErr != nil {
+			return applyErr
 		}
 	}
 

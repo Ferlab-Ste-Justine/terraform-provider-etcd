@@ -77,14 +77,14 @@ func dataSourceKeyRangeRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(KeyRangeId{key, rangeEnd}.Serialize())
 
-	keyInfos, _, err := cli.GetKeyRange(key, rangeEnd)
+	keyInfos, err := cli.GetKeyRange(key, rangeEnd)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error retrieving key range (key='%s', range_end='%s'): %s", key, rangeEnd, err.Error()))
 	}
 
-	sorted := make([]client.KeyInfo, len(keyInfos))
+	sorted := make([]client.KeyInfo, len(keyInfos.Keys))
 	idx := 0
-	for _, keyInfo := range keyInfos {
+	for _, keyInfo := range keyInfos.Keys {
 		sorted[idx] = keyInfo
 		idx++
 	}
@@ -92,7 +92,7 @@ func dataSourceKeyRangeRead(d *schema.ResourceData, meta interface{}) error {
 		return sorted[i].Key < sorted[j].Key
 	})
 
-	dataKeyInfos := make([]interface{}, len(keyInfos))
+	dataKeyInfos := make([]interface{}, len(keyInfos.Keys))
 
 	for idx, keyInfo := range sorted {
 		dataKeyInfo := make(map[string]interface{})

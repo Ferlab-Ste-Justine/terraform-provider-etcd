@@ -59,7 +59,7 @@ func resourceKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
 	cli := meta.(*client.EtcdClient)
 
-	err := cli.PutKey(key.Key, key.Value)
+	_, err := cli.PutKey(key.Key, key.Value)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error setting value for key '%s': %s", key.Key, err.Error()))
 	}
@@ -72,12 +72,12 @@ func resourceKeyRead(d *schema.ResourceData, meta interface{}) error {
 	key := d.Id()
 	cli := meta.(*client.EtcdClient)
 
-	val, exists, err := cli.GetKey(key)
+	val, err := cli.GetKey(key, client.GetKeyOptions{})
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error retrieving key '%s' for reading: %s", key, err.Error()))
 	}
 
-	if !exists {
+	if !val.Found() {
 		d.SetId("")
 		return nil
 	}
@@ -92,7 +92,7 @@ func resourceKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
 	cli := meta.(*client.EtcdClient)
 
-	err := cli.PutKey(key.Key, key.Value)
+	_, err := cli.PutKey(key.Key, key.Value)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error setting value for key '%s': %s", key.Key, err.Error()))
 	}

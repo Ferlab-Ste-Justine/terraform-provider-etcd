@@ -12,17 +12,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func DiffPrefixWithInput(cli *client.EtcdClient, prefix string, inputKeys map[string]client.KeyInfo, inputKeysPrefix string, inputIsSource bool) (client.KeysDiff, error) {
-	prefixKeys, _, err := cli.GetPrefix(prefix)
+func DiffPrefixWithInput(cli *client.EtcdClient, prefix string, inputKeys map[string]client.KeyInfo, inputKeysPrefix string, inputIsSource bool) (client.KeyDiff, error) {
+	prefixKeys, err := cli.GetPrefix(prefix)
 	if err != nil {
-		return client.KeysDiff{}, err
+		return client.KeyDiff{}, err
 	}
+
+	inputKeysInfoMap := client.KeyInfoMap(inputKeys)
 
 	if inputIsSource {
-		return client.GetKeysDiff(inputKeys, inputKeysPrefix, prefixKeys, prefix), nil
+		return client.GetKeyDiff(inputKeysInfoMap.ToValueMap(inputKeysPrefix), prefixKeys.Keys.ToValueMap(prefix)), nil
 	}
 
-	return client.GetKeysDiff(prefixKeys, prefix, inputKeys, inputKeysPrefix), nil
+	return client.GetKeyDiff(prefixKeys.Keys.ToValueMap(prefix), inputKeysInfoMap.ToValueMap(inputKeysPrefix)), nil
 }
 
 func resourceSynchronizedDirectory() *schema.Resource {
