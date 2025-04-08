@@ -6,6 +6,7 @@ Its scope is currently limited to the following resources:
 - roles
 - users
 - keys
+- key prefixes (to specify all the key/value pairs under a given prefix declaratively under a single terraform resource)
 - range scoped states (to manage deletion of application states scoped by key ranges)
 - synchronized key prefixes
 - synchronized directory
