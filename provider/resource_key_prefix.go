@@ -70,7 +70,7 @@ func keyPrefixSchemaToModel(d *schema.ResourceData) EtcdKeyPrefix {
 	prefix, _ := d.GetOk("prefix")
 	model.Prefix = prefix.(string)
 
-	keys, keysExists := d.GetOk("retry")
+	keys, keysExists := d.GetOk("keys")
 	if keysExists {
 		for _, elem := range (keys.(*schema.Set)).List() {
 			elemMap := elem.(map[string]interface{})
@@ -113,6 +113,11 @@ func resourceKeyPrefixRead(d *schema.ResourceData, meta interface{}) error {
 	prefixKeys, prefixErr := cli.GetPrefix(keyPrefix.Prefix)
 	if prefixErr != nil {
 		return errors.New(fmt.Sprintf("Error getting keys under prefix '%s': %s", keyPrefix.Prefix, prefixErr.Error()))
+	}
+
+	diff := client.GetKeyDiff(keyPrefix.Keys, prefixKeys.Keys.ToValueMap(keyPrefix.Prefix))
+	if diff.IsEmpty() {
+		return nil
 	}
 
     keys := make([]map[string]interface{}, 0)
