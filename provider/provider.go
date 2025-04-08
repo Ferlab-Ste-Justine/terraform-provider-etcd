@@ -119,6 +119,7 @@ func Provider() *schema.Provider {
 			"etcd_role":                      resourceRole(),
 			"etcd_user":                      resourceUser(),
 			"etcd_key":                       resourceKey(),
+			"etcd_key_prefix":                resourceKeyPrefix(),
 			"etcd_range_scoped_state":        resourceRangeScopedState(),
 			"etcd_synchronized_key_prefixes": resourceSynchronizedKeyPrefixes(),
 			"etcd_synchronized_directory":    resourceSynchronizedDirectory(),
