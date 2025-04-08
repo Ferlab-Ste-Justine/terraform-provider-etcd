@@ -24,11 +24,9 @@ resource "etcd_key" "hello_world" {
 
 ### Required
 
-- **key** (String) Key to set.
-- **value** (String) Value to store in the key.
+- `key` (String) Key to set.
+- `value` (String) Value to store in the key.
 
-### Optional
+### Read-Only
 
-- **id** (String) The ID of this resource.
-
-
+- `id` (String) The ID of this resource.

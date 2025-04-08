@@ -25,12 +25,13 @@ resource "etcd_synchronized_key_prefixes" "sync_my_app" {
 
 ### Required
 
-- **destination_prefix** (String) Destination key prefix to synchronize to.
-- **source_prefix** (String) Source key prefix to synchronize from.
+- `destination_prefix` (String) Destination key prefix to synchronize to.
+- `source_prefix` (String) Source key prefix to synchronize from.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **recurrence** (String) Defines when the resource should be recreated to trigger a resync. Can be set to once, onchange or always. Note that onchange looks for change during the plan phase only so consider setting it to always if another terraform resource in your script changes the source.
+- `recurrence` (String) Defines when the resource should be recreated to trigger a resync. Can be set to once, onchange or always. Note that onchange looks for change during the plan phase only so consider setting it to always if another terraform resource in your script changes the source.
 
+### Read-Only
 
+- `id` (String) The ID of this resource.

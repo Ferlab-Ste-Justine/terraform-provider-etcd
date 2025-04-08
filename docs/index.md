@@ -26,14 +26,14 @@ provider "etcd" {
 
 ### Optional
 
-- **ca_cert** (String) File that contains the CA certificate that signed the etcd servers' certificates. Can alternatively be set with the ETCDCTL_CACERT environment variable. Can also be omitted.
-- **cert** (String) File that contains the client certificate used to authentify the user. Can alternatively be set with the ETCDCTL_CERT environment variable. Can be omitted if password authentication is used.
-- **connection_timeout** (String) Timeout to establish the etcd servers connection as a duration. Defaults to 10s.
-- **endpoints** (String) Endpoints of the etcd servers. The entry of each server should follow the ip:port format and be coma separated. Can alternatively be set with the ETCDCTL_ENDPOINTS environment variable.
-- **key** (String) File that contains the client encryption key used to authentify the user. Can alternatively be set with the ETCDCTL_KEY environment variable. Can be omitted if password authentication is used.
-- **password** (String, Sensitive) Password of the etcd user that will be used to access etcd. Can alternatively be set with the ETCDCTL_PASSWORD environment variable. Can also be omitted if tls certificate authentication will be used instead.
-- **request_timeout** (String) Timeout for individual requests the provider makes on the etcd servers as a duration. Defaults to 10s.
-- **retries** (Number) Number of times operations that result in retriable errors should be re-attempted. Defaults to 10.
-- **retry_interval** (String) Duration to wait after a failing etcd request before retrying. Defaults to 100ms.
-- **skip_tls** (Boolean) If set to true, connection to the etcd cluster will be attempted in plaintext without encryption. Default to false
-- **username** (String) Name of the etcd user that will be used to access etcd. Can alternatively be set with the ETCDCTL_USERNAME environment variable. Can also be omitted if tls certificate authentication will be used instead as the username will be infered from the certificate.
+- `ca_cert` (String) File that contains the CA certificate that signed the etcd servers' certificates. Can alternatively be set with the ETCDCTL_CACERT environment variable. Can also be omitted.
+- `cert` (String) File that contains the client certificate used to authentify the user. Can alternatively be set with the ETCDCTL_CERT environment variable. Can be omitted if password authentication is used.
+- `connection_timeout` (String) Timeout to establish the etcd servers connection as a duration. Defaults to 10s.
+- `endpoints` (String) Endpoints of the etcd servers. The entry of each server should follow the ip:port format and be coma separated. Can alternatively be set with the ETCDCTL_ENDPOINTS environment variable.
+- `key` (String) File that contains the client encryption key used to authentify the user. Can alternatively be set with the ETCDCTL_KEY environment variable. Can be omitted if password authentication is used.
+- `password` (String, Sensitive) Password of the etcd user that will be used to access etcd. Can alternatively be set with the ETCDCTL_PASSWORD environment variable. Can also be omitted if tls certificate authentication will be used instead.
+- `request_timeout` (String) Timeout for individual requests the provider makes on the etcd servers as a duration. Defaults to 10s.
+- `retries` (Number) Number of times operations that result in retriable errors should be re-attempted. Defaults to 10.
+- `retry_interval` (String) Duration to wait after a failing etcd request before retrying. Defaults to 100ms.
+- `skip_tls` (Boolean) If set to true, connection to the etcd cluster will be attempted in plaintext without encryption. Default to false
+- `username` (String) Name of the etcd user that will be used to access etcd. Can alternatively be set with the ETCDCTL_USERNAME environment variable. Can also be omitted if tls certificate authentication will be used instead as the username will be infered from the certificate.

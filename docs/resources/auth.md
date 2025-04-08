@@ -23,10 +23,8 @@ resource "etcd_auth" "auth" {
 
 ### Required
 
-- **enabled** (Boolean) Enable or disable auth on etcd.
+- `enabled` (Boolean) Enable or disable auth on etcd.
 
-### Optional
+### Read-Only
 
-- **id** (String) The ID of this resource.
-
-
+- `id` (String) The ID of this resource.

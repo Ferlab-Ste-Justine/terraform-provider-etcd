@@ -30,13 +30,14 @@ resource "etcd_range_scoped_state" "patroni" {
 
 ### Required
 
-- **key** (String) Key specifying the beginning of the key range.
-- **range_end** (String) Key specifying the end of the key range (exclusive). To you set it to the value of the key scopes the range to a single key. If you would like the range to be anything prefixed by the key, you can use the etcd_prefix_range_end data helper.
+- `key` (String) Key specifying the beginning of the key range.
+- `range_end` (String) Key specifying the end of the key range (exclusive). To you set it to the value of the key scopes the range to a single key. If you would like the range to be anything prefixed by the key, you can use the etcd_prefix_range_end data helper.
 
 ### Optional
 
-- **clear_on_creation** (Boolean) Whether to clear all pre-existing keys in the range when the resource is created.
-- **clear_on_deletion** (Boolean) Whether to clear all existing keys in the range when the resource is deleted.
-- **id** (String) The ID of this resource.
+- `clear_on_creation` (Boolean) Whether to clear all pre-existing keys in the range when the resource is created.
+- `clear_on_deletion` (Boolean) Whether to clear all existing keys in the range when the resource is deleted.
 
+### Read-Only
 
+- `id` (String) The ID of this resource.

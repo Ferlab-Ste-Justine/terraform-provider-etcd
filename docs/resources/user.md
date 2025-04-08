@@ -35,12 +35,13 @@ resource "etcd_user" "bob" {
 
 ### Required
 
-- **username** (String) Name of the user. Changing this will delete the user and create a new one.
+- `username` (String) Name of the user. Changing this will delete the user and create a new one.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **password** (String, Sensitive) Password of the user. Can be omitted for a user that you wish to authenticate strictly with tls certificate authentication.
-- **roles** (Set of String) Roles of the user, to define his access.
+- `password` (String, Sensitive) Password of the user. Can be omitted for a user that you wish to authenticate strictly with tls certificate authentication.
+- `roles` (Set of String) Roles of the user, to define his access.
 
+### Read-Only
 
+- `id` (String) The ID of this resource.

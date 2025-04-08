@@ -39,23 +39,24 @@ resource "etcd_role" "configurator" {
 
 ### Required
 
-- **name** (String) Name of the role. Changing this will delete the role and create a new one.
+- `name` (String) Name of the role. Changing this will delete the role and create a new one.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **permissions** (Block Set) Permissions to grant to the role on various etcd key ranges. (see [below for nested schema](#nestedblock--permissions))
+- `permissions` (Block Set) Permissions to grant to the role on various etcd key ranges. (see [below for nested schema](#nestedblock--permissions))
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--permissions"></a>
 ### Nested Schema for `permissions`
 
 Required:
 
-- **key** (String) Key specifying the beginning of the key range.
-- **range_end** (String) Key specifying the end of the key range (exclusive). To you set it to the value of the key to grant permission on a single key. If you would like the range to be anything prefixed by the key, you can use the etcd_prefix_range_end data helper.
+- `key` (String) Key specifying the beginning of the key range.
+- `range_end` (String) Key specifying the end of the key range (exclusive). To you set it to the value of the key to grant permission on a single key. If you would like the range to be anything prefixed by the key, you can use the etcd_prefix_range_end data helper.
 
 Optional:
 
-- **permission** (String) Permissions to grant to the role on the given key range. Can be: read, write or readwrite
-
-
+- `permission` (String) Permissions to grant to the role on the given key range. Can be: read, write or readwrite

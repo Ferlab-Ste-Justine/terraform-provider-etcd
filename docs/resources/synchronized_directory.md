@@ -47,15 +47,16 @@ resource "etcd_synchronized_directory" "destination" {
 
 ### Required
 
-- **directory** (String) Directory to synchronize with the key prefix.
-- **key_prefix** (String) Key prefix to synchronize with the directory.
-- **source** (String) Authoritative source of data during the sync (data will move from the source to the destination). Can be one of: directory, key-prefix
+- `directory` (String) Directory to synchronize with the key prefix.
+- `key_prefix` (String) Key prefix to synchronize with the directory.
+- `source` (String) Authoritative source of data during the sync (data will move from the source to the destination). Can be one of: directory, key-prefix
 
 ### Optional
 
-- **directory_permission** (String) Permission of generated directories if the directory is the destination and missing.
-- **files_permission** (String) Permission of generated files in the case where the directory is the destination.
-- **id** (String) The ID of this resource.
-- **recurrence** (String) Defines when the resource should be recreated to trigger a resync. Can be set to once, onchange or always. Note that onchange looks for change during the plan phase only so consider setting it to always if another terraform resource in your script changes the source.
+- `directory_permission` (String) Permission of generated directories if the directory is the destination and missing.
+- `files_permission` (String) Permission of generated files in the case where the directory is the destination.
+- `recurrence` (String) Defines when the resource should be recreated to trigger a resync. Can be set to once, onchange or always. Note that onchange looks for change during the plan phase only so consider setting it to always if another terraform resource in your script changes the source.
 
+### Read-Only
 
+- `id` (String) The ID of this resource.

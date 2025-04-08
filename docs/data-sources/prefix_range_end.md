@@ -17,14 +17,9 @@ Helper to retrieve a range end that, combined with the key argument, constitutes
 
 ### Required
 
-- **key** (String) Key to get a prefix of.
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `key` (String) Key to get a prefix of.
 
 ### Read-Only
 
-- **range_end** (String) Computed range end that, combined with the key, constitutes a prefix of the key.
-
-
+- `id` (String) The ID of this resource.
+- `range_end` (String) Computed range end that, combined with the key, constitutes a prefix of the key.

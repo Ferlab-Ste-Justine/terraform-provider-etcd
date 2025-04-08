@@ -17,27 +17,22 @@ Retrieves information about the keys contained in a given range.
 
 ### Required
 
-- **key** (String) Key specifying the beginning of the key range.
-- **range_end** (String) Key specifying the end of the key range (exclusive). To you set it to the value of the key scopes the range to a single key. If you would like the range to be anything prefixed by the key, you can use the etcd_prefix_range_end data helper.
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `key` (String) Key specifying the beginning of the key range.
+- `range_end` (String) Key specifying the end of the key range (exclusive). To you set it to the value of the key scopes the range to a single key. If you would like the range to be anything prefixed by the key, you can use the etcd_prefix_range_end data helper.
 
 ### Read-Only
 
-- **results** (List of Object) List of keys that were read. Note that numerical values returned by etcd are in int64 format which might cause problems in int32 platforms. (see [below for nested schema](#nestedatt--results))
+- `id` (String) The ID of this resource.
+- `results` (List of Object) List of keys that were read. Note that numerical values returned by etcd are in int64 format which might cause problems in int32 platforms. (see [below for nested schema](#nestedatt--results))
 
 <a id="nestedatt--results"></a>
 ### Nested Schema for `results`
 
 Read-Only:
 
-- **create_revision** (Number)
-- **key** (String)
-- **lease** (Number)
-- **mod_revision** (Number)
-- **value** (String)
-- **version** (Number)
-
-
+- `create_revision` (Number)
+- `key` (String)
+- `lease` (Number)
+- `mod_revision` (Number)
+- `value` (String)
+- `version` (Number)
