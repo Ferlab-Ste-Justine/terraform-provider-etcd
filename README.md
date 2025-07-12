@@ -26,7 +26,7 @@ Create a file named **.terraformrc** in your home directory with the following c
 ```
 provider_installation {
   dev_overrides {
-    "ferlab/etcd" = "<Path to the project's parent directory on your machine>/terraform-provider-etcd"
+    "Ferlab-Ste-Justine/etcd" = "<Path to the project's parent directory on your machine>/terraform-provider-etcd"
   }
   direct {}
 }
