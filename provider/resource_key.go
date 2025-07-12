@@ -34,13 +34,21 @@ func resourceKey() *schema.Resource {
 				ForceNew:     false,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
+			"clear_on_deletion": &schema.Schema{
+				Description: "Whether to clear the key in etcd when the resource is deleted. Useful to set to false if you wish to migrate the ownership of the key outside of a terraform project without causing disruption in the key's existence.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    false,
+			},
 		},
 	}
 }
 
 type EtcdKey struct {
-	Key   string
-	Value string
+	Key             string
+	Value           string
+	ClearOnDeletion bool
 }
 
 func keySchemaToModel(d *schema.ResourceData) EtcdKey {
@@ -51,6 +59,9 @@ func keySchemaToModel(d *schema.ResourceData) EtcdKey {
 
 	value, _ := d.GetOk("value")
 	model.Value = value.(string)
+
+	clearOnDeletion, _ := d.GetOk("clear_on_deletion")
+	model.ClearOnDeletion = clearOnDeletion.(bool)
 
 	return model
 }
@@ -103,6 +114,10 @@ func resourceKeyUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	key := keySchemaToModel(d)
 	cli := meta.(*client.EtcdClient)
+
+	if !key.ClearOnDeletion {
+		return nil
+	}
 
 	err := cli.DeleteKey(key.Key)
 	if err != nil {

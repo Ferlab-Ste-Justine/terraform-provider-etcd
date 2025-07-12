@@ -27,6 +27,10 @@ resource "etcd_key" "hello_world" {
 - `key` (String) Key to set.
 - `value` (String) Value to store in the key.
 
+### Optional
+
+- `clear_on_deletion` (Boolean) Whether to clear the key in etcd when the resource is deleted. Useful to set to false if you wish to migrate the ownership of the key outside of a terraform project without causing disruption in the key's existence.
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.

@@ -1,8 +1,8 @@
 terraform {
-  required_version = ">= 0.13"
+  required_version = ">= 1.3.0"
   required_providers {
     etcd = {
-      source  = "ferlab/etcd"
+      source  = "Ferlab-Ste-Justine/etcd"
       version = "1.0.0"
     }
   }
